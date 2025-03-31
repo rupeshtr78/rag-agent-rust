@@ -1,3 +1,5 @@
+mod load_lancedb;
+
 pub mod load_lancedb;
 pub mod query;
 use crate::docsplitter::code_loader;

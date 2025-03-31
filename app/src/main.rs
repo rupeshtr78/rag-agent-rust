@@ -1,12 +1,5 @@
 use anyhow::{Context, Result};
-use app::cli;
-use app::commands::build_args;
 
-mod app;
-mod chat;
-mod docsplitter;
-mod embedder;
-mod lancevectordb;
 
 fn main() -> Result<()> {
     println!("Starting Application");

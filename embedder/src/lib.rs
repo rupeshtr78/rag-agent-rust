@@ -1,3 +1,4 @@
+mod embedder;
 use anyhow::Context;
 use anyhow::Result;
 use http_body_util::Full;
@@ -13,12 +14,17 @@ pub mod config;
 use crate::lancevectordb::HttpsClient;
 use config::{EmbedRequest, EmbedResponse};
 
+
+fn main() {
+    println!("Hello, world!");
+}
 /// Fetch the embedding from the embedding service
 /// Arguments:
 /// - url: &str
 /// - embed_data: &Arc<RwLock<EmbedRequest>>
 /// Returns:
 /// - EmbedResponse
+///
 pub async fn fetch_embedding(
     embed_data: &Arc<RwLock<EmbedRequest>>,
     https_client: &HttpsClient,

@@ -1,13 +1,9 @@
 [package]
-name = "rag-agent-rust"
+name = "docloader"
 version = "0.1.0"
 edition = "2024"
 
-[workspace]
-members = [ "app", "chat", "docloader", "embedder","vectordb"]
-resolver = "2"
-
-[workspace.dependencies]
+[dependencies]
 env_logger = "0.11.5"
 log = "0.4.22"
 serde = { version = "1.0.215", features = ["derive"] }

@@ -1,0 +1,16 @@
+[package]
+name = "embedder"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "embedder"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1.0.97"
+http-body-util = "0.1.3"
+hyper = "1.6.0"
+log = "0.4.27"
+tokio = "1.44.1"
+serde = { version = "1.0.215", features = ["derive"] }

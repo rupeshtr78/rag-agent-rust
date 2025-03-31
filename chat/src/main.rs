@@ -9,11 +9,9 @@ use std::io::Write;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-mod chat_config;
-#[allow(dead_code)]
-mod model_options;
-mod prompt_template;
-
+fn main() {
+    println!("Hello, world!");
+}
 /// Run the chatbot
 /// # Arguments
 /// * `ai_prompt` - The prompt to send to the AI model
@@ -166,3 +164,6 @@ pub async fn run_chat_with_history(
 
     Ok(())
 }
+
+
+
