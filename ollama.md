@@ -91,3 +91,48 @@ curl http://localhost:11434/api/embeddings -d '{
   "prompt": "The sky is blue because of Rayleigh scattering"
 }'
 ```
+
+
+`Dockerfile` for the repository
+
+
+
+### Key Features:
+1. **Multi-stage build**: 
+   - Builder stage compiles the Rust project.
+   - Final stage uses a minimal Debian image for runtime.
+
+2. **Dependencies**:
+   - Only includes `ca-certificates` for HTTPS support (adjust if additional runtime dependencies are needed for LanceDB/Ollama).
+
+3. **Entrypoint**:
+   - Defaults to running the binary with `--help`.
+
+### Usage Notes:
+1. **Build the image**:
+   ```bash
+   docker build -t rag-agent-rust .
+   ```
+
+2. **Run the container**:
+   ```bash
+   docker run --rm rag-agent-rust [COMMAND] [ARGS]
+   # Example:
+   docker run --rm rag-agent-rust load -p /data/sample/
+   ```
+
+3. **Volumes for data**:
+   - Mount a volume for LanceDB persistence:
+     ```bash
+     docker run -v ./data:/data rag-agent-rust
+     ```
+
+4. **Ollama Integration**:
+   - If Ollama runs locally, use `--network=host` to connect:
+     ```bash
+     docker run --network=host rag-agent-rust chat -p "query"
+     ```
+
+### Adjustments Needed:
+- Add environment variables (e.g., `OLLAMA_HOST`) if required by the app.
+- Include additional runtime dependencies in the final image if the project needs them (check `README.md` for prerequisites).
