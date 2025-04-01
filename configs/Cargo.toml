@@ -9,3 +9,6 @@ hyper-util.workspace = true
 http-body-util.workspace = true
 hyper.workspace = true
 hyper-rustls.workspace = true
+anyhow.workspace = true
+rustls.workspace = true
+log.workspace = true
