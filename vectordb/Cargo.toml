@@ -3,12 +3,20 @@ name = "vectordb"
 version = "0.1.0"
 edition = "2024"
 
+
+
 [dependencies]
-lancedb = "0.15.0"
-tokio = { version = "1.0", features = ["full"] }
-arrow = "53.3.0"
-arrow-array = "53.3.0"
-anyhow = "1.0.95"
-arrow-schema = "53.3.0"
-app = { path = "../app" }
-embedder = { path = "../embedder" }
+configs = { path = "../configs" }
+lancedb.workspace = true
+anyhow.workspace = true
+arrow.workspace = true
+tokio.workspace = true
+log.workspace = true
+arrow-array.workspace = true
+arrow-schema.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+chrono = "0.4.40"
+
+
+

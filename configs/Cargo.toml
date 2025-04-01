@@ -1,0 +1,10 @@
+[package]
+name = "configs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+lancedb.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true

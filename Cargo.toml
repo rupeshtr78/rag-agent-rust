@@ -1,11 +1,5 @@
-[package]
-name = "rag-agent-rust"
-version = "0.1.0"
-edition = "2024"
-
 [workspace]
-members = [ "app", "chat", "docloader", "embedder","vectordb"]
-resolver = "2"
+members = ["configs", "vectordb"]
 
 [workspace.dependencies]
 env_logger = "0.11.5"

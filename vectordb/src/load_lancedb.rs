@@ -1,5 +1,5 @@
-use app::constants::VECTOR_DB_DIM_SIZE;
-use crate::embedder::config::{EmbedRequest, EmbedResponse};
+use configs::constants::{VECTOR_DB_DIM_SIZE, LANCEDB_DISTANCE_FN};
+use configs::embed_config::{EmbedRequest, EmbedResponse};
 use anyhow::Result;
 use anyhow::{Context, Ok};
 use arrow::array::{FixedSizeListArray, StringArray, TimestampSecondArray};
@@ -8,8 +8,8 @@ use arrow_array::{Int32Array, RecordBatch, RecordBatchIterator};
 use arrow_schema::TimeUnit;
 use arrow_schema::{DataType, Field};
 use arrow_schema::{Schema as ArrowSchema, Schema};
-use lancedb::index::scalar::FtsIndexBuilder;
 use lancedb::index::Index;
+use lancedb::index::scalar::FtsIndexBuilder;
 use lancedb::{Connection, Table};
 use std::sync::Arc;
 use std::vec;
@@ -304,7 +304,7 @@ pub async fn create_index_on_embedding(
 
     // Initialize the builder first
     let hns_index = lancedb::index::vector::IvfHnswSqIndexBuilder::default()
-        .distance_type(crate::app::constants::LANCEDB_DISTANCE_FN) // Set the desired distance type, e.g., L2
+        .distance_type(LANCEDB_DISTANCE_FN) // Set the desired distance type, e.g., L2
         .num_partitions(100) // Set the number of partitions, e.g., 100
         .sample_rate(256) // Set the sample rate
         .max_iterations(50) // Set the max iterations for training
