@@ -7,9 +7,7 @@ use hyper::client::connect::HttpInfo;
 use hyper_rustls::HttpsConnector;
 use hyper_util::client::legacy::Client as LegacyClient;
 use hyper_util::client::legacy::connect::HttpConnector;
-use hyper_util::rt::TokioExecutor;
 use log::{debug, info};
-use rustls::crypto::ring::default_provider;
 
 pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
     match commands {
@@ -28,7 +26,7 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             info!(" Embedding Model: {:?}", embed_model);
             info!(" API URL: {:?}", api_url);
 
-            let https_client = get_https_client().context("Failed to create HTTPS client")?;
+            let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
             // let embed_url = format!("{}/{}", constants::CHAT_API_URL, "api/embed");
 
             rt.block_on(check_connection(
@@ -88,7 +86,7 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             info!(" File Query: {:?}", file_context);
 
             // Initialize the http client outside the thread // TODO wrap in Arc<Mutex>
-            let https_client = get_https_client().context("Failed to create HTTPS client")?;
+            let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
 
             // Initialize the database
             let mut db = rt
@@ -148,7 +146,7 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             println!(" Table: {:?}", table);
 
             // Initialize the http client outside the thread // TODO wrap in Arc<Mutex>
-            let https_client = get_https_client().context("Failed to create HTTPS client")?;
+            let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
             // do a check to see if client is up
 
             // Initialize the database
@@ -210,7 +208,7 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             println!(" AI Model: {:?}", ai_model);
 
             let context: Option<&str> = None;
-            let client = get_https_client().context("Failed to create HTTPS client")?;
+            let client = configs::get_https_client().context("Failed to create HTTPS client")?;
 
             let system_prompt = "template/general_prompt.txt";
             rt.block_on(chat::run_chat(
@@ -252,26 +250,3 @@ async fn check_connection(client: &HttpsClient, url: &str) -> Result<()> {
 }
 
 type HttpsClient = LegacyClient<HttpsConnector<HttpConnector>, Full<Bytes>>;
-pub fn get_https_client() -> Result<HttpsClient> {
-    // Install the crypto provider required by rustls
-    match default_provider().install_default() {
-        Result::Ok(_) => debug!("Crypto provider installed successfully"),
-        Err(e) => {
-            return Err(anyhow::anyhow!(
-                "Failed to install crypto provider: {:?}",
-                e
-            ));
-        }
-    }
-
-    // Create an HTTPS connector with native roots
-    let https = hyper_rustls::HttpsConnectorBuilder::new()
-        .with_native_roots()?
-        .https_or_http()
-        .enable_http1()
-        .build();
-
-    // Build the hyper client from the HTTPS connector
-    let client: HttpsClient = LegacyClient::builder(TokioExecutor::new()).build(https);
-    Ok(client)
-}

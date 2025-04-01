@@ -1232,11 +1232,14 @@ dependencies = [
 name = "configs"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "http-body-util",
  "hyper 0.14.32",
  "hyper-rustls 0.27.5",
  "hyper-util",
  "lancedb",
+ "log",
+ "rustls 0.23.25",
 ]
 
 [[package]]
@@ -5997,6 +6000,7 @@ dependencies = [
  "hyper-util",
  "lancedb",
  "log",
+ "serde",
  "tokio",
 ]
 
