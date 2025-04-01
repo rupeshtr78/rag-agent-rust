@@ -1,5 +1,3 @@
-use configs::constants::{VECTOR_DB_DIM_SIZE, LANCEDB_DISTANCE_FN};
-use embedder::embed_config::{EmbedRequest, EmbedResponse};
 use anyhow::Result;
 use anyhow::{Context, Ok};
 use arrow::array::{FixedSizeListArray, StringArray, TimestampSecondArray};
@@ -8,10 +6,13 @@ use arrow_array::{Int32Array, RecordBatch, RecordBatchIterator};
 use arrow_schema::TimeUnit;
 use arrow_schema::{DataType, Field};
 use arrow_schema::{Schema as ArrowSchema, Schema};
-use lancedb::index::Index;
+use configs::constants::{LANCEDB_DISTANCE_FN, VECTOR_DB_DIM_SIZE};
+use embedder::embed_config::{EmbedRequest, EmbedResponse};
 use lancedb::index::scalar::FtsIndexBuilder;
+use lancedb::index::Index;
 use lancedb::{Connection, Table};
 use std::sync::Arc;
+use std::time::{SystemTime, UNIX_EPOCH};
 use std::vec;
 use tokio::sync::RwLock;
 
@@ -88,9 +89,9 @@ impl TableSchema {
                     ),
                 ),
                 Arc::new(StringArray::from_iter_values((0..256).map(|_| ""))),
-                Arc::new(TimestampSecondArray::from_iter_values(
-                    (0..256).map(|_| chrono::Utc::now().timestamp()),
-                )),
+                Arc::new(TimestampSecondArray::from_iter_values((0..256).map(|_| {
+                    SystemTime::UNIX_EPOCH.elapsed().unwrap().as_secs() as i64
+                }))),
                 Arc::new(Int32Array::from_iter_values((0..256).map(|_| 0))),
             ],
         )
@@ -256,9 +257,12 @@ pub async fn create_record_batch(
         FixedSizeListArray::from_iter_primitive::<Float32Type, _, _>(vectors, VECTOR_DB_DIM_SIZE),
     );
 
-    let created_at_array = Arc::new(TimestampSecondArray::from_iter_values(
-        (0..len).map(|_| chrono::Utc::now().timestamp()),
-    ));
+    let created_at_array = Arc::new(TimestampSecondArray::from_iter_values((0..len).map(|_| {
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64
+    })));
 
     let chunk_number_array = Arc::new(Int32Array::from_iter_values(
         (0..len).map(|_| request.chunk_number.unwrap_or(0)),

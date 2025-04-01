@@ -1,21 +1,22 @@
 [package]
-name = "vectordb"
+name = "app"
 version = "0.1.0"
-edition = "2021"
-
+edition = "2024"
 
 [dependencies]
 configs = { path = "../configs" }
+vectordb = { path = "../vectordb" }
 embedder = { path = "../embedder" }
+chat = { path = "../chat" }
+clap.workspace = true
 log.workspace = true
-tokio.workspace = true
-futures.workspace = true
-arrow.workspace = true
-arrow-array.workspace = true
-arrow-schema.workspace = true
-lancedb.workspace = true
 anyhow.workspace = true
 http-body-util.workspace = true
 hyper.workspace = true
 hyper-rustls.workspace = true
 hyper-util.workspace = true
+rustls.workspace = true
+tokio.workspace = true
+env_logger.workspace = true
+lancedb.workspace = true
+http.workspace = true
