@@ -1,5 +1,5 @@
 use configs::constants::{VECTOR_DB_DIM_SIZE, LANCEDB_DISTANCE_FN};
-use configs::embed_config::{EmbedRequest, EmbedResponse};
+use embedder::embed_config::{EmbedRequest, EmbedResponse};
 use anyhow::Result;
 use anyhow::{Context, Ok};
 use arrow::array::{FixedSizeListArray, StringArray, TimestampSecondArray};
