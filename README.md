@@ -98,10 +98,10 @@ The application supports various commands and subcommands. Use the `--help` flag
 
 ```sh
 # Generate embeddings and store them in the database
-cargo run -- load -p /home/rupesh/aqrtr/gits/vector-embed-rust/src/scripts
+cargo run -- load -p sample/
 
 # Query the database for nearest neighbors
-cargo run -- rag-query -t scripts_table -d scripts_db -i "what is temperature"
+cargo run -- rag-query -t sample_table -d sample_db -i "what is temperature"
 
 # Start an interactive chat session
 cargo run -- chat -p "what is mirostat"
