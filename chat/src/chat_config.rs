@@ -2,16 +2,11 @@ use crate::model_options::Options;
 use crate::prompt_template::Prompt;
 use anyhow::Result;
 use anyhow::{Context, anyhow};
-use bytes::Bytes;
-use configs::HttpsClient;
 use configs::constants::{self, OPEN_AI_CHAT_API, OPEN_AI_URL};
-use http_body_util::Full;
 use log::debug;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt;
-use std::sync::Arc;
-use tokio::sync::RwLock;
 
 /// ChatRole is an enum that represents the role of the chat message
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -175,65 +170,15 @@ impl ChatRequest {
     }
 }
 
-/// Get chat response from the AI model
-/// # Arguments
-/// * `chat_request` - The chat request to send to the AI model
-/// * `http_client` - The HTTP client to use for the request
-/// # Returns
-/// * `Result<ChatResponse>` - The result of the chat response
-pub async fn ai_chat(
-    chat_request: &Arc<RwLock<ChatRequest>>,
-    http_client: &HttpsClient,
-) -> Result<ChatResponse> {
-    let chat_request = chat_request.read().await;
-
-    let chat_url = chat_request.get_chat_api_url()?;
-    debug!("Chat URL: {:?}", chat_url);
-
-    // Serialize the data to a JSON string, handling potential errors
-    let chat_body = chat_request.create_chat_body()?;
-    let request_body = Full::new(Bytes::from(chat_body));
-
-    let request = http::Request::builder()
-        .method("POST")
-        .uri(&chat_url)
-        .header("Content-Type", "application/json")
-        .header("Authorization", format!("Bearer {}", chat_request.api_key))
-        .body(request_body)
-        .context("Failed to build request")?;
-
-    // Send the request and await the response.
-    let response = http_client.request(request).await?;
-    if response.status() != 200 {
-        return Err(anyhow!(
-            "Failed to get response: {} from {}",
-            response.status(),
-            &chat_url
-        ));
-    }
-    debug!("Chat Response Status: {:?}", response.status());
-
-    // get the response body into bytes
-    let body = http_body_util::BodyExt::collect(response.into_body())
-        .await?
-        .to_bytes();
-    // debug!("Response body: {:?}", body.len());
-
-    let response_body: ChatResponse =
-        serde_json::from_slice(&body).context("Failed to parse response")?;
-
-    Ok(response_body)
-}
-
 /// ChatResponse is a struct that represents a chat response
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ChatResponse {
-    model: String,
+    pub model: String,
     created_at: String,
-    message: ChatMessage,
+    pub message: ChatMessage,
     done_reason: Option<String>,
     done: bool,
-    context: Option<Vec<i32>>,
+    pub context: Option<Vec<i32>>,
     total_duration: Option<i64>,
     load_duration: Option<i64>,
     prompt_eval_count: Option<i32>,

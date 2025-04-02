@@ -16,3 +16,4 @@ serde_json.workspace = true
 tokio.workspace = true
 handlebars.workspace = true
 http.workspace = true
+mockito.workspace = true
