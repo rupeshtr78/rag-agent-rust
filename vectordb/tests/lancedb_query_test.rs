@@ -12,7 +12,6 @@ mod test_lancedb_query {
     use configs::constants::EMBEDDING_MODEL;
     use configs::constants::OLLAMA_CHAT_API;
     use configs::constants::VECTOR_DB_DIM_SIZE;
-    use embedder;
     use embedder::embed_config::{EmbedRequest, EmbedResponse};
     use futures::StreamExt;
     use lancedb::query::IntoQueryVector;
@@ -56,6 +55,7 @@ mod test_lancedb_query {
 
     async fn get_query_vector(input_list: &[String]) -> Result<Vec<f32>> {
         let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
+
         // create embedder request for query
         let query_request_arc = EmbedRequest::NewArcEmbedRequest(
             "ollama",
