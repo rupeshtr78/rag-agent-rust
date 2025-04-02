@@ -1,5 +1,5 @@
-mod cli;
-mod commands;
+pub mod cli;
+pub mod commands;
 use anyhow::{Context, Result};
 fn main() -> Result<()> {
     println!("Starting Application");
