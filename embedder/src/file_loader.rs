@@ -15,7 +15,7 @@ use tokio::sync::RwLock;
 use tree_sitter_language::LanguageFn;
 
 #[derive(Debug, PartialEq)]
-enum Language {
+pub enum Language {
     Rust,
     Python,
     Cpp,
@@ -33,7 +33,7 @@ enum Language {
 }
 
 impl Language {
-    fn from_str(s: &str) -> Self {
+    pub fn from_str(s: &str) -> Self {
         match s {
             "rs" => Language::Rust,
             "py" => Language::Python,
@@ -56,14 +56,14 @@ impl Language {
 }
 
 pub struct FileChunk {
-    content: Vec<String>,
-    file_path: PathBuf,
-    chunk_number: i32,
+    pub content: Vec<String>,
+    pub file_path: PathBuf,
+    pub chunk_number: i32,
 }
 
 /// A struct that represents a codebase.
 impl FileChunk {
-    fn new(content: String, file_path: PathBuf, chunk_number: i32) -> Self {
+    pub fn new(content: String, file_path: PathBuf, chunk_number: i32) -> Self {
         let content_lines: Vec<String> = content.lines().map(|s| s.to_string()).collect();
         Self {
             content: content_lines,
@@ -247,7 +247,7 @@ async fn split_file_into_chunks(
             get_language_from_file_extension(language).context("Unsupported file extension")?,
             chunk_config,
         )
-            .context("Failed to create code splitter")?;
+        .context("Failed to create code splitter")?;
 
         let code_chunks = splitter.chunks(&content);
 
@@ -282,7 +282,7 @@ async fn split_file_into_chunks(
 ///
 /// A tuple where the first element is the detected `Language` enum type,
 /// and the second element is a boolean indicating if the file is supported.
-fn is_supported_file(file_path: &Path) -> (Language, bool) {
+pub fn is_supported_file(file_path: &Path) -> (Language, bool) {
     // Extracts the file extension and converts it to a string slice
     let ext = file_path.extension().and_then(|e| e.to_str());
 
