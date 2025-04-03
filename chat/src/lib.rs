@@ -95,6 +95,8 @@ pub async fn run_chat_with_history(
     api_url: &str,
     api_key: &str,
     ai_model: &str,
+    input_fn : fn() -> String,
+    continue_chat: bool,
 ) -> anyhow::Result<()> {
     println!("Starting LLM chat with history...");
 
@@ -154,12 +156,11 @@ pub async fn run_chat_with_history(
         }
 
         // Prompt the user for the next input @TODO: Fix this is not printing the prompt
-        print!("Ask Followup: ");
-        std::io::stdout().flush().expect("Failed to flush stdout");
-        let mut user_input = String::new();
-        std::io::stdin()
-            .read_line(&mut user_input)
-            .expect("Failed to read line");
+
+        if !continue_chat {
+            break;
+        }
+        let user_input = input_fn();
         current_prompt = user_input.trim().to_string();
 
         if current_prompt.to_lowercase() == "exit" {
@@ -168,6 +169,16 @@ pub async fn run_chat_with_history(
     }
 
     Ok(())
+}
+
+pub fn get_chat_input() -> String {
+    print!("Ask Followup: ");
+    std::io::stdout().flush().expect("Failed to flush stdout");
+    let mut user_input = String::new();
+    std::io::stdin()
+        .read_line(&mut user_input)
+        .expect("Failed to read line");
+    user_input
 }
 
 /// Get chat response from the AI model
