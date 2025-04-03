@@ -5,8 +5,8 @@ use http_body_util::Full;
 use hyper::body::Bytes;
 use hyper::client::connect::HttpInfo;
 use hyper_rustls::HttpsConnector;
-use hyper_util::client::legacy::Client as LegacyClient;
 use hyper_util::client::legacy::connect::HttpConnector;
+use hyper_util::client::legacy::Client as LegacyClient;
 use log::{debug, info};
 
 pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
@@ -26,7 +26,11 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             info!(" Embedding Model: {:?}", embed_model);
             info!(" API URL: {:?}", api_url);
 
-            let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
+            let chunk_size = chunk_size
+                .parse::<usize>()
+                .context("Failed to parse chunk size")?;
+            let https_client =
+                configs::get_https_client().context("Failed to create HTTPS client")?;
             // let embed_url = format!("{}/{}", constants::CHAT_API_URL, "api/embed");
 
             rt.block_on(check_connection(
@@ -53,6 +57,7 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             .context("Failed to run lance vectordb")?;
 
             // shutdown the runtime after the embedding is done
+            println!("Finished Loading the embedding");
             rt.shutdown_timeout(std::time::Duration::from_secs(1));
         }
         Commands::LanceQuery {
@@ -86,7 +91,8 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             info!(" File Query: {:?}", file_context);
 
             // Initialize the http client outside the thread // TODO wrap in Arc<Mutex>
-            let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
+            let https_client =
+                configs::get_https_client().context("Failed to create HTTPS client")?;
 
             // Initialize the database
             let mut db = rt
@@ -148,10 +154,11 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             println!(" Embedding Model: {:?}", embed_model);
             println!(" AI Model: {:?}", ai_model);
             println!(" Table: {:?}", table);
-            println!(" Continue Chat: {:?}", continue_chat);
+            println!(" Continous Chat: {:?}", continue_chat);
 
             // Initialize the http client outside the thread // TODO wrap in Arc<Mutex>
-            let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
+            let https_client =
+                configs::get_https_client().context("Failed to create HTTPS client")?;
             // do a check to see if client is up
 
             // Initialize the database

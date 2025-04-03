@@ -1,12 +1,11 @@
 use anyhow::{Context, Result};
-use app::cli;
 use app::commands;
+use app::commands::Args;
+use clap::Parser;
 fn main() -> Result<()> {
     println!("Starting Application");
 
-    // app::commands::dbg_cmd(); // Debugging
-
-    let commands = commands::build_args();
+    let args = Args::parse();
 
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(4)
@@ -15,7 +14,7 @@ fn main() -> Result<()> {
         .build()
         .context("Failed to build runtime")?;
 
-    cli::cli(commands, rt).context("Failed to run Command")?;
+    commands::run_app(args, rt).context("Failed to run Command")?;
 
     println!("Exiting application");
 
