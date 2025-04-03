@@ -1,18 +1,25 @@
 use ::std::io::{self, Write};
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
 use configs::constants::{AI_MODEL, EMBEDDING_MODEL, SYSTEM_PROMPT_PATH, VERSION};
 use configs::constants::{CHAT_API_KEY, CHAT_API_URL};
 use log::info;
+use tokio::runtime::Runtime;
+
+use crate::{cli, cli_interactive};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 #[clap(name = "rag-agent-rust")]
-#[clap(about = "A CLI application for embedding and querying a vector database", long_about = None)]
+#[clap(about = "A CLI application for LLM Interactions", long_about = None)]
 pub struct Args {
     #[clap(subcommand)]
-    cmd: Option<Commands>,
+    pub cmd: Option<Commands>,
     #[clap(short, long, global = true)]
-    log_level: Option<LogLevel>,
+    pub log_level: Option<LogLevel>,
+    /// If Interactive Cli is to be used
+    #[clap(short = 'o', long, global = false)]
+    pub interactive: Option<bool>,
 }
 
 #[derive(Subcommand, Debug)]
@@ -34,7 +41,7 @@ pub enum Commands {
         // chunk size
         #[clap(short, long)]
         #[clap(default_value = "2048")]
-        chunk_size: usize,
+        chunk_size: String,
         /// Provide the model to use for query embedding
         #[clap(short = 'm', long)]
         #[clap(default_value = "ollama")]
@@ -123,7 +130,7 @@ pub enum Commands {
         #[clap(short, long)]
         #[clap(default_value = "false")]
         whole_query: String,
-        /// specify if the additional file context default is false
+        /// specify if the additional context from same file has to be added default is false
         #[clap(short, long)]
         #[clap(default_value = "false")]
         file_context: String,
@@ -166,6 +173,7 @@ pub enum LogLevel {
     Info,
     Warn,
     Error,
+    OFF,
 }
 
 impl Commands {
@@ -187,16 +195,13 @@ impl LogLevel {
             LogLevel::Info => log::LevelFilter::Info,
             LogLevel::Warn => log::LevelFilter::Warn,
             LogLevel::Error => log::LevelFilter::Error,
+            LogLevel::OFF => log::LevelFilter::Off,
         }
     }
 }
 
+/// Initialize the logger with the specified log level.
 fn colog_init(log_level: LogLevel) {
-    // colog::basic_builder()
-    //     .filter_level(log_level.get_log_level_filter())
-    //     .format_module_path(true)
-    //     .init();
-
     // Initialize env_logger with module path formatting
     let mut builder = env_logger::Builder::new();
     builder
@@ -207,6 +212,36 @@ fn colog_init(log_level: LogLevel) {
     println!("Log level set to: {:?}", log_level);
 }
 
+/// Run the application with the provided arguments and runtime.
+pub fn run_app(args: Args, rt: Runtime) -> Result<()> {
+    // Handle log level (if provided)
+    let log_level = args.log_level.unwrap_or(LogLevel::Info);
+    colog_init(log_level);
+
+    // Run the command
+    match args.interactive {
+        Some(true) => {
+            info!("Running in interactive mode");
+            let commands =
+                cli_interactive::interactive_cli().context("Failed to run interactive CLI")?;
+            cli::cli(commands, rt).context("Failed to run interactive Command")?;
+        }
+        _ => {
+            info!("Running in non-interactive mode");
+            let commands = args.cmd.unwrap_or_else(|| {
+                info!("No subcommand provided. Use --help for more information.");
+                Commands::Version {
+                    version: VERSION.to_string(),
+                }
+            });
+            cli::cli(commands, rt).context("Failed to run inline Command")?;
+        }
+    }
+
+    Ok(())
+}
+
+#[allow(dead_code)]
 /// Initiates the log builds the command line arguments and return the command to run.
 pub fn build_args() -> Commands {
     let args = Args::parse();
@@ -216,22 +251,10 @@ pub fn build_args() -> Commands {
         match log_level {
             LogLevel::Error => colog_init(LogLevel::Error),
             LogLevel::Warn => colog_init(LogLevel::Warn),
-            LogLevel::Info => colog_init(LogLevel::Info),
             LogLevel::Debug => colog_init(LogLevel::Debug),
+            _ => colog_init(LogLevel::Info),
         }
-    } else {
-        colog_init(LogLevel::Info);
     }
-
-    // match args.cmd {
-    //     Some(command) => command,
-    //     None => {
-    //         info!("No subcommand provided. Use --help for more information.");
-    //         Commands::Version {
-    //             version: VERSION.to_string(),
-    //         }
-    //     }
-    // }
 
     args.cmd.map_or_else(
         || {
@@ -242,108 +265,6 @@ pub fn build_args() -> Commands {
         },
         |cmd: Commands| cmd,
     )
-}
-
-/// quick and dirty way to test the command line arguments
-#[allow(dead_code)]
-pub fn dbg_cmd() {
-    let args = Args::parse();
-    println!("Parsed args: {:?}", args);
-    let commands = match args.cmd {
-        Some(command) => command,
-        None => {
-            println!("No subcommand provided. Use --help for more information.");
-            return;
-        }
-    };
-
-    match &commands {
-        Commands::Version { version } => {
-            println!("Version command");
-            println!("Version: {:?}", version);
-        }
-        Commands::Load {
-            path,
-            chunk_size,
-            llm_provider,
-            embed_model,
-            api_url,
-            api_key,
-        } => {
-            println!("Load command");
-            println!("Path: {:?}", path);
-            println!("Chunk size: {:?}", chunk_size);
-            println!("LLM Provider: {:?}", llm_provider);
-            println!("Embed Model: {:?}", embed_model);
-            println!("API URL: {:?}", api_url);
-            println!("API Key: {:?}", api_key);
-        }
-        Commands::LanceQuery {
-            input,
-            llm_provider,
-            api_url,
-            api_key,
-            model,
-            table,
-            database,
-            whole_query,
-            file_context,
-        } => {
-            println!("Lance Query command");
-            println!("Query: {:?}", input);
-            println!("LLM Provider: {:?}", llm_provider);
-            println!("API URL: {:?}", api_url);
-            println!("API Key: {:?}", api_key);
-            println!("Model: {:?}", model);
-            println!("Table: {:?}", table);
-            println!("Database: {:?}", database);
-            println!("Whole Query: {:?}", whole_query);
-            println!("File Context: {:?}", file_context);
-        }
-        Commands::RagQuery {
-            input,
-            llm_provider,
-            embed_model,
-            api_url,
-            api_key,
-            ai_model,
-            table,
-            database,
-            whole_query,
-            file_context: file_query,
-            system_prompt,
-            continue_chat,
-        } => {
-            println!("Lance Query command");
-            let cli_input = Commands::fetch_prompt_from_cli(input.clone(), "Enter query: ");
-            println!("Query: {:?}", cli_input);
-            println!("LLM Provider: {:?}", llm_provider);
-            println!("Model: {:?}", api_url);
-            println!("API Key: {:?}", api_key);
-            println!("Model: {:?}", embed_model);
-            println!("AI Model: {:?}", ai_model);
-            println!("Table: {:?}", table);
-            println!("Database: {:?}", database);
-            println!("Whole Query: {:?}", whole_query);
-            println!("File Query: {:?}", file_query);
-            println!("System Prompt: {:?}", system_prompt);
-            println!("Continue Chat: {:?}", continue_chat);
-        }
-        Commands::Generate {
-            prompt,
-            llm_provider,
-            api_url,
-            api_key,
-            ai_model,
-        } => {
-            println!("Chat command");
-            println!("Prompt: {:?}", prompt);
-            println!("LLM Provider: {:?}", llm_provider);
-            println!("API URL: {:?}", api_url);
-            println!("API Key: {:?}", api_key);
-            println!("AI Model: {:?}", ai_model);
-        }
-    }
 }
 
 /// Generic function to fetch a value from the command line if not provided as an argument.

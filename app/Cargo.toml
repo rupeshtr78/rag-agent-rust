@@ -22,3 +22,4 @@ lancedb.workspace = true
 http.workspace = true
 mockito.workspace = true
 tempdir.workspace = true
+dialoguer.workspace = true

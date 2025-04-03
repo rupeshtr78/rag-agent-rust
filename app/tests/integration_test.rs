@@ -13,7 +13,7 @@ mod integration_tests {
         // Adjust paths and parameters according to your actual setup
         let commands = Commands::Load {
             path: "tests/resources/sample/".to_string(),
-            chunk_size: 512, // provide realistic test value
+            chunk_size: "512".to_string(), // provide realistic test value
             llm_provider: "ollama".to_string(),
             embed_model: EMBEDDING_MODEL.to_string(),
             api_url: CHAT_API_URL.to_string(),
