@@ -131,6 +131,10 @@ pub enum Commands {
         #[clap(short, long)]
         #[clap(default_value = SYSTEM_PROMPT_PATH)]
         system_prompt: String,
+        /// continue flag to continue the conversation
+        #[clap(short, long)]
+        #[clap(default_value = "true")]
+        continue_chat: String,
     },
     /// Chat with the AI
     Generate {
@@ -308,6 +312,7 @@ pub fn dbg_cmd() {
             whole_query,
             file_context: file_query,
             system_prompt,
+            continue_chat,
         } => {
             println!("Lance Query command");
             let cli_input = Commands::fetch_prompt_from_cli(input.clone(), "Enter query: ");
@@ -322,6 +327,7 @@ pub fn dbg_cmd() {
             println!("Whole Query: {:?}", whole_query);
             println!("File Query: {:?}", file_query);
             println!("System Prompt: {:?}", system_prompt);
+            println!("Continue Chat: {:?}", continue_chat);
         }
         Commands::Generate {
             prompt,

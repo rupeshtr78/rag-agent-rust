@@ -2,11 +2,14 @@ pub mod chat_config;
 pub mod model_options;
 pub mod prompt_template;
 
-use anyhow::Context;
+use crate::chat_config::ChatRequest;
+use anyhow::{Context, anyhow};
+use bytes::Bytes;
+use chat_config::ChatMessage;
 use chat_config::ChatResponse;
-use chat_config::{ChatMessage, ai_chat};
 use configs::HttpsClient;
 use configs::constants::CHAT_RESPONSE_FORMAT;
+use http_body_util::Full;
 use log::{debug, info};
 use serde_json::Value;
 use std::io::Write;
@@ -48,12 +51,12 @@ pub async fn run_chat(
     // let template = prompt_template::get_template(&prompt, PROMPT_TEMPLATE_PATH)
     //     .context("Failed to get template")?;
 
-    let chat_url = format!("{}/{}", api_url, "api/chat");
+    // let chat_url = format!("{}/{}", api_url, "api/chat");
 
     let chat_request = chat_config::ChatRequest::new(
         provider,
         ai_model,
-        chat_url,
+        api_url.to_string(),
         api_key.to_string(),
         false,
         CHAT_RESPONSE_FORMAT.to_string(),
@@ -92,6 +95,8 @@ pub async fn run_chat_with_history(
     api_url: &str,
     api_key: &str,
     ai_model: &str,
+    input_fn : fn() -> String,
+    continue_chat: bool,
 ) -> anyhow::Result<()> {
     println!("Starting LLM chat with history...");
 
@@ -151,12 +156,11 @@ pub async fn run_chat_with_history(
         }
 
         // Prompt the user for the next input @TODO: Fix this is not printing the prompt
-        print!("Ask Followup: ");
-        std::io::stdout().flush().expect("Failed to flush stdout");
-        let mut user_input = String::new();
-        std::io::stdin()
-            .read_line(&mut user_input)
-            .expect("Failed to read line");
+
+        if !continue_chat {
+            break;
+        }
+        let user_input = input_fn();
         current_prompt = user_input.trim().to_string();
 
         if current_prompt.to_lowercase() == "exit" {
@@ -165,4 +169,64 @@ pub async fn run_chat_with_history(
     }
 
     Ok(())
+}
+
+pub fn get_chat_input() -> String {
+    print!("Ask Followup: ");
+    std::io::stdout().flush().expect("Failed to flush stdout");
+    let mut user_input = String::new();
+    std::io::stdin()
+        .read_line(&mut user_input)
+        .expect("Failed to read line");
+    user_input
+}
+
+/// Get chat response from the AI model
+/// # Arguments
+/// * `chat_request` - The chat request to send to the AI model
+/// * `http_client` - The HTTP client to use for the request
+/// # Returns
+/// * `Result<ChatResponse>` - The result of the chat response
+pub async fn ai_chat(
+    chat_request: &Arc<RwLock<ChatRequest>>,
+    http_client: &HttpsClient,
+) -> anyhow::Result<ChatResponse> {
+    let chat_request = chat_request.read().await;
+
+    let chat_url = chat_request.get_chat_api_url()?;
+    debug!("Chat URL: {:?}", chat_url);
+
+    // Serialize the data to a JSON string, handling potential errors
+    let chat_body = chat_request.create_chat_body()?;
+    let request_body = Full::new(Bytes::from(chat_body));
+
+    let request = http::Request::builder()
+        .method("POST")
+        .uri(&chat_url)
+        .header("Content-Type", "application/json")
+        .header("Authorization", format!("Bearer {}", chat_request.api_key))
+        .body(request_body)
+        .context("Failed to build request")?;
+
+    // Send the request and await the response.
+    let response = http_client.request(request).await?;
+    if response.status() != 200 {
+        return Err(anyhow!(
+            "Failed to get response: {} from {}",
+            response.status(),
+            &chat_url
+        ));
+    }
+    debug!("Chat Response Status: {:?}", response.status());
+
+    // get the response body into bytes
+    let body = http_body_util::BodyExt::collect(response.into_body())
+        .await?
+        .to_bytes();
+    // debug!("Response body: {:?}", body.len());
+
+    let response_body: ChatResponse =
+        serde_json::from_slice(&body).context("Failed to parse response")?;
+
+    Ok(response_body)
 }

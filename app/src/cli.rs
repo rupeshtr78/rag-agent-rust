@@ -123,6 +123,7 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             whole_query,
             file_context,
             system_prompt,
+            continue_chat,
         } => {
             let input_list = Commands::fetch_prompt_from_cli(input.clone(), "Enter query: ");
             // let embed_model = embed_model.to_string();
@@ -136,6 +137,9 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
                 .context("Failed to parse file_query flag")?;
             // let system_prompt = system_prompt.as_str();
             // let provider = llm_provider.as_str();
+            let continue_chat: bool = continue_chat
+                .parse()
+                .context("Failed to parse continue_chat flag")?;
 
             println!("Query command is run with below arguments:");
             println!(" Query: {:?}", input_list);
@@ -144,6 +148,7 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             println!(" Embedding Model: {:?}", embed_model);
             println!(" AI Model: {:?}", ai_model);
             println!(" Table: {:?}", table);
+            println!(" Continue Chat: {:?}", continue_chat);
 
             // Initialize the http client outside the thread // TODO wrap in Arc<Mutex>
             let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
@@ -187,6 +192,8 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
                 &api_url,
                 &api_key,
                 &ai_model,
+                chat::get_chat_input,
+                continue_chat,
             ))
             .context("Failed to run chat")?;
 
