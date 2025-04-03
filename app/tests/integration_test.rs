@@ -51,5 +51,5 @@ mod integration_tests {
         assert!(true, "RAG query executed successfully");
 
         Ok(())
-    } // @TODO - Function does not exit as it has a loop fix this,
+    }
 }
