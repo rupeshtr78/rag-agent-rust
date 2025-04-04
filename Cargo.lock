@@ -25,6 +25,7 @@ dependencies = [
  "chat",
  "configs",
  "embedder",
+ "lancedb",
  "tokio",
  "vectordb",
 ]
