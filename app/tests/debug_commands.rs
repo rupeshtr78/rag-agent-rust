@@ -102,6 +102,12 @@ mod tests {
                 println!("API Key: {:?}", api_key);
                 println!("AI Model: {:?}", ai_model);
             }
+            Commands::Exit => {
+                println!("Exit command");
+            }
+            Commands::Man => {
+                println!("Help command");
+            }
         }
     }
 }
