@@ -1,5 +1,5 @@
 [workspace]
-members = ["app", "chat", "configs", "embedder", "vectordb"]
+members = [ "agent","app", "chat", "configs", "embedder", "vectordb"]
 
 resolver = "2"
 
