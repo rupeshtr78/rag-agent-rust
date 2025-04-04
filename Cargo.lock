@@ -1256,12 +1256,14 @@ name = "configs"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "dotenvy",
  "http-body-util",
  "hyper 0.14.32",
  "hyper-rustls 0.27.5",
  "hyper-util",
  "lancedb",
  "log",
+ "once_cell",
  "rustls 0.23.25",
 ]
 
@@ -2043,6 +2045,12 @@ dependencies = [
  "quote",
  "syn 2.0.100",
 ]
+
+[[package]]
+name = "dotenvy"
+version = "0.15.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "downcast-rs"

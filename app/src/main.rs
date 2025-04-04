@@ -2,7 +2,9 @@ use anyhow::{Context, Result};
 use app::commands;
 use app::commands::Args;
 use clap::Parser;
+
 fn main() -> Result<()> {
+    configs::constants::init_env();
     println!("Starting Application");
 
     let args = Args::parse();
