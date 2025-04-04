@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 pub struct Agent {
     pub llm_provider: String,
     pub api_url: String,
@@ -9,7 +10,12 @@ pub struct Agent {
 }
 
 impl Agent {
-    pub async fn Load(&self, path: &str, chunk_size: usize) -> Result<()> {
+    pub async fn Load(
+        &self,
+        rt: tokio::runtime::Runtime,
+        path: &str,
+        chunk_size: usize,
+    ) -> Result<()> {
         // Load the embedding
         let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
         rt.block_on(check_connection(
@@ -32,7 +38,7 @@ impl Agent {
         println!("Finished Loading the embedding");
         Ok(())
     }
-    pub async fn LanceQuery(&self, input: Vec<String>) -> Result<()> {
+    pub async fn LanceQuery(&self, rt: tokio::runtime::Runtime, input: Vec<String>) -> Result<()> {
         // Query the Lance Vector Database
         let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
         rt.block_on(check_connection(
