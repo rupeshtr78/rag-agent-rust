@@ -1,0 +1,12 @@
+[package]
+name = "agent"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+configs = { path = "../configs" }
+vectordb = { path = "../vectordb" }
+embedder = { path = "../embedder" }
+chat = { path = "../chat" }
+tokio.workspace = true
+anyhow.workspace = true

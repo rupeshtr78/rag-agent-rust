@@ -1,6 +1,7 @@
 use crate::commands::Commands;
 use anyhow::Result;
 use anyhow::{Context, Ok};
+use configs::constants::SYSTEM_PROMPT_PATH;
 use http_body_util::Full;
 use hyper::body::Bytes;
 use hyper::client::connect::HttpInfo;
@@ -224,7 +225,7 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             let context: Option<&str> = None;
             let client = configs::get_https_client().context("Failed to create HTTPS client")?;
 
-            let system_prompt = "template/general_prompt.txt";
+            let system_prompt = SYSTEM_PROMPT_PATH;
             rt.block_on(chat::run_chat(
                 system_prompt,
                 &prompt,
