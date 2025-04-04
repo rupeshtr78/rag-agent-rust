@@ -8,6 +8,7 @@ pub struct Agent {
     pub table: String,
     pub database: String,
     pub system_prompt: String,
+    // pub mcp_client: Option<FnMut() -> Vec<String>>,
 }
 
 impl Agent {
