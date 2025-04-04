@@ -240,7 +240,18 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             rt.shutdown_timeout(std::time::Duration::from_secs(1));
         }
         Commands::Version { version } => {
-            info!("Version: {}", version);
+            println!("Version: {}", version);
+            std::process::exit(0);
+        }
+
+        Commands::Exit {} => {
+            println!("Exiting application");
+            std::process::exit(0);
+        }
+
+        Commands::Man {} => {
+            println!("Help command is not implemented yet");
+            std::process::exit(0);
         }
     }
 

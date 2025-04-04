@@ -165,6 +165,10 @@ pub enum Commands {
         #[clap(default_value = AI_MODEL)]
         ai_model: String,
     },
+
+    /// Exit the application
+    Exit,
+    Man,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, ValueEnum)]
@@ -260,7 +264,7 @@ pub fn build_args() -> Commands {
         || {
             info!("No subcommand provided. Use --help for more information.");
             Commands::Version {
-                version: VERSION.to_string(),
+                version: configs::constants::VERSION.to_string(),
             }
         },
         |cmd: Commands| cmd,

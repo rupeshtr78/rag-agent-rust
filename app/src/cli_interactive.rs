@@ -7,7 +7,15 @@ use dialoguer::{console::Term, theme::ColorfulTheme, Confirm, Input, Select};
 
 pub fn interactive_cli() -> Result<Commands> {
     let theme = ColorfulTheme::default();
-    let commands = vec!["Load", "LanceQuery", "RagQuery", "Generate", "Version"];
+    let commands = vec![
+        "Load",
+        "LanceQuery",
+        "RagQuery",
+        "Generate",
+        "Version",
+        "Exit",
+        "Help",
+    ];
 
     let command_index = Select::with_theme(&theme)
         .with_prompt("Select the CLI command to run")
@@ -166,11 +174,12 @@ pub fn interactive_cli() -> Result<Commands> {
         }),
 
         "Version" => Ok(Commands::Version {
-            version: Input::with_theme(&theme)
-                .with_prompt("Specify version")
-                .default("0.1.0".into())
-                .interact_text()?,
+            version: configs::constants::VERSION.to_string(),
         }),
+
+        "Exit" => Ok(Commands::Exit),
+
+        "Help" => Ok(Commands::Man),
 
         _ => Err(anyhow!("Selected invalid command")),
     }
