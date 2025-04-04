@@ -30,7 +30,7 @@ The system is composed of several modules that handle different aspects of the e
 - **Embedding**: Contains logic for generating embeddings and persisting them to the database.
 - **VectorDB**: Handles interactions with the lancedb vector database for storing and querying vector embeddings.
 - **Chat**: Integrates with the Ollama LLM model to provide interactive chat functionalities based on retrieved embeddings.
-- **TODO**: Https support, Adding Tests, Adding PDF Support, interactive cli 
+- **TODO**: Adding Tests, Adding PDF Support, Adding Agent refactor
 ## Features
 
 - **File Type Support**: The tool supports multiple file types including Rust (`rs`), Python (`py`), C++ (`cpp`), Java (`java`), JavaScript (`js`), TypeScript (`ts`), and text files. (TODO: Add PDF support)
