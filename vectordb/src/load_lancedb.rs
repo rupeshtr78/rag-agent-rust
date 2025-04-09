@@ -73,6 +73,7 @@ impl TableSchema {
     /// Create an empty RecordBatch with the schema can be used for testing
     /// Arguments:
     /// - &self: &TableSchema
+    /// 
     /// Returns:
     /// - Result<RecordBatch> - The RecordBatch (Arrow)
     pub fn empty_batch(&self) -> Result<RecordBatch> {
@@ -103,6 +104,7 @@ impl TableSchema {
 /// Arguments:
 /// - db: &mut Connection
 /// - table_schema: &TableSchema
+/// 
 /// Returns:
 /// - Result<(), Box<dyn Error>>
 pub async fn create_lance_table(db: &mut Connection, table_schema: &TableSchema) -> Result<()> {
@@ -132,6 +134,7 @@ pub async fn create_lance_table(db: &mut Connection, table_schema: &TableSchema)
 /// - table_schema: &TableSchema
 /// - table_name: &str
 /// - arrow_schema: Arc<Schema>
+/// 
 /// Returns:
 /// - Result<(), Box<dyn Error>>
 async fn insert_empty_batch(
@@ -165,6 +168,7 @@ async fn insert_empty_batch(
 /// - table_schema: &TableSchema
 /// - records: RecordBatch (Arrow)
 /// - table: Table (lancedb)
+/// 
 /// Returns:
 /// - Result<(), Box<dyn Error>>
 pub async fn insert_embeddings(
@@ -199,6 +203,7 @@ pub async fn insert_embeddings(
 /// - request: Arc<RwLock<EmbedRequest>>
 /// - response: EmbedResponse
 /// - table_schema: &TableSchema
+/// 
 /// Returns:
 /// - Result<RecordBatch, Box<dyn Error>> - The RecordBatch (Arrow)
 pub async fn create_record_batch(
@@ -226,7 +231,7 @@ pub async fn create_record_batch(
     };
 
     let metadata_array = Arc::new(StringArray::from_iter_values(
-        std::iter::repeat(dir_name).take(len).map(|s| s.to_string()),
+        std::iter::repeat_n(dir_name, len).map(|s| s.to_string()),
     ));
 
     // let metadata_array = Arc::new(StringArray::from_iter_values(
@@ -297,6 +302,7 @@ pub async fn create_record_batch(
 /// - db: &mut Connection
 /// - table_name: &str
 /// - column: Vec<&str>
+/// 
 /// Returns:
 /// - Result<(), Box<dyn Error>>
 pub async fn create_index_on_embedding(
@@ -342,6 +348,7 @@ pub async fn create_index_on_embedding(
 /// - db: &mut Connection
 /// - table_name: &str
 /// - column: Vec<&str>
+/// 
 /// Returns:
 /// - Result<(), Box<dyn Error>>
 pub async fn create_inverted_index(

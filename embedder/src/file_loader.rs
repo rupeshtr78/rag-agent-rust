@@ -33,7 +33,7 @@ pub enum Language {
 }
 
 impl Language {
-    pub fn from_str(s: &str) -> Self {
+    pub fn parse_language(s: &str) -> Self {
         match s {
             "rs" => Language::Rust,
             "py" => Language::Python,
@@ -289,7 +289,7 @@ pub fn is_supported_file(file_path: &Path) -> (Language, bool) {
     if let Some(ext_str) = ext {
         debug!("File Extension: {}", ext_str);
 
-        match Language::from_str(ext_str) {
+        match Language::parse_language(ext_str) {
             Language::UNKNOWN => (Language::UNKNOWN, false),
             lang => (lang, true),
         }
@@ -357,7 +357,7 @@ fn capture_context_lines(content: &str, num_lines: usize) -> String {
     for (i, line) in filtered_lines.iter().enumerate() {
         // Check for "ERROR" or "EXCEPTION" after filtering out "LINEAGE"
         if line.to_lowercase().contains("error") || line.to_lowercase().contains("exception") {
-            let start = if i >= num_lines { i - num_lines } else { 0 };
+            let start = i.saturating_sub(num_lines);
             let end = usize::min(i + num_lines + 1, filtered_lines.len());
 
             for context_line in &filtered_lines[start..end] {

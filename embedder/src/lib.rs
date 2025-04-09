@@ -10,15 +10,15 @@ use std::str;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-#[allow(non_snake_case)]
 #[allow(dead_code)]
 use configs::HttpsClient;
-use embed_config::{EmbedRequest,EmbedResponse};
+use embed_config::{EmbedRequest, EmbedResponse};
 
 /// Fetch the embedding from the embedding service
 /// Arguments:
 /// - url: &str
 /// - embed_data: &Arc<RwLock<EmbedRequest>>
+///
 /// Returns:
 /// - EmbedResponse
 pub async fn fetch_embedding(
@@ -42,6 +42,7 @@ pub async fn fetch_embedding(
 /// Arguments:
 /// - url: &str
 /// - req: &EmbedRequest
+///
 /// Returns:
 /// - Result<EmbedResponse, Box<dyn Error + Send + Sync>>
 pub async fn create_embed_request(

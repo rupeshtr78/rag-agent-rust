@@ -245,12 +245,12 @@ pub fn cli(commands: Commands, rt: tokio::runtime::Runtime) -> Result<()> {
             std::process::exit(0);
         }
 
-        Commands::Exit {} => {
+        Commands::Exit => {
             println!("Exiting application");
             std::process::exit(0);
         }
 
-        Commands::Man {} => {
+        Commands::Man => {
             println!("Help command is not implemented yet");
             std::process::exit(0);
         }

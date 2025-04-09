@@ -1,6 +1,5 @@
 #[allow(unused_imports)]
 #[allow(unused)]
-
 mod test_lancedb_query {
     use anyhow::Context;
     use anyhow::Result;
@@ -17,7 +16,7 @@ mod test_lancedb_query {
     use lancedb::query::IntoQueryVector;
     use std::sync::Arc;
     use tokio::sync::RwLock;
-    use vectordb;
+
     use vectordb::load_lancedb::{
         create_index_on_embedding, create_inverted_index, create_lance_table, create_record_batch,
         insert_embeddings, TableSchema,
@@ -34,7 +33,7 @@ mod test_lancedb_query {
         let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
 
         vectordb::run_embedding_pipeline(
-            &path.to_string(),
+            path,
             100,
             "ollama",
             CHAT_API_URL,
@@ -92,7 +91,7 @@ mod test_lancedb_query {
     async fn create_test_embedding_table(db_uri: &str, table_name: &str) -> Result<()> {
         let mut db = create_test_connection(db_uri).await?;
         // let table_name = "TEST_TABLE_NAME_INDEX";
-        let table_schema = create_test_table_schema(&table_name);
+        let table_schema = create_test_table_schema(table_name);
 
         // Create table first
         create_lance_table(&mut db, &table_schema).await?;
@@ -151,7 +150,7 @@ mod test_lancedb_query {
     #[tokio::test]
     async fn test_get_column_data_from_batch() {
         let table_name = "TEST_TABLE_NAME_RECORD_BATCH";
-        let table_schema = create_test_table_schema(&table_name);
+        let table_schema = create_test_table_schema(table_name);
         let request = Arc::new(RwLock::new(EmbedRequest {
             provider: "test-provider".to_string(),
             api_url: "http://localhost:8000".to_string(),

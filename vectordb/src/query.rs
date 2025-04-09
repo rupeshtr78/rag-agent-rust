@@ -2,12 +2,12 @@ use embedder;
 use embedder::embed_config::EmbedRequest;
 // use hyper::client::HttpConnector;
 // use ::hyper::Client as HttpClient;
-use configs::HttpsClient;
 use anyhow::{anyhow, Context, Result};
 use arrow_array::{Array, StringArray};
 use arrow_array::{Int32Array, RecordBatch};
 use arrow_schema::DataType::{Int32, Utf8};
 use arrow_schema::SchemaRef;
+use configs::HttpsClient;
 use futures::StreamExt;
 use lancedb::arrow::SendableRecordBatchStream;
 use lancedb::query::ExecutableQuery;
@@ -25,15 +25,17 @@ use log::{debug, error};
 /// - db_config: VectorDbConfig
 /// - http_client: &HttpClient<HttpConnector>
 /// - whole_query: bool
+/// 
 /// Returns:
 /// - Result<Vec<String>>
+#[allow(clippy::too_many_arguments)]
 pub async fn run_query(
     db: &mut Connection,
     provider: &str,
     api_url: &str,
     api_key: &str,
     embed_model: &str,
-    input_list: &Vec<String>,
+    input_list: &[String],
     vector_table: &str,
     http_client: &HttpsClient,
     whole_query: bool,
@@ -163,6 +165,7 @@ pub async fn query_vector_table(
 /// Arguments:
 /// - batches: &Vec<lancedb::error::Result<RecordBatch>>
 /// - table_column: &str
+/// 
 /// Returns:
 /// - Result<Vec<String>>
 pub fn get_content_from_stream(
@@ -191,6 +194,7 @@ pub fn get_content_from_stream(
 /// - table_column: &str
 /// - batch_ref: &RecordBatch
 /// - schema: SchemaRef
+/// 
 /// Returns:
 /// - Result<Vec<String>>
 pub fn get_column_data_from_batch(
@@ -267,6 +271,7 @@ async fn query_all_content(table: &Table) -> Result<SendableRecordBatchStream> {
 /// Arguments:
 /// - query_vector: impl IntoQueryVector + Sized
 /// - table: &Table
+/// 
 /// Returns:
 /// - Result<SendableRecordBatchStream>
 async fn query_nearest_vector(
@@ -330,6 +335,7 @@ async fn query_content_based_on_chunks(
 /// Arguments:
 /// - table: &Table
 /// - metadata: Vec<String>
+/// 
 /// Returns:
 /// - Result<SendableRecordBatchStream>
 #[allow(dead_code)]

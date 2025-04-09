@@ -44,7 +44,7 @@ mod load_lancedb_test {
     async fn test_create_lance_table() -> Result<()> {
         let mut db = create_test_connection().await?;
         let table_name = "TEST_TABLE_NAME_CREATE";
-        let table_schema = create_test_table_schema(&table_name);
+        let table_schema = create_test_table_schema(table_name);
 
         // drop table if it exists
         if db
@@ -70,7 +70,7 @@ mod load_lancedb_test {
     #[tokio::test]
     async fn test_create_record_batch() -> Result<()> {
         let table_name = "TEST_TABLE_NAME_RECORD_BATCH";
-        let table_schema = create_test_table_schema(&table_name);
+        let table_schema = create_test_table_schema(table_name);
         let request = Arc::new(RwLock::new(EmbedRequest {
             provider: "test-provider".to_string(),
             api_url: "http://localhost:8000".to_string(),
@@ -106,7 +106,7 @@ mod load_lancedb_test {
     async fn test_create_inverted_index() -> Result<()> {
         let mut db = create_test_connection().await?;
         let table_name = "TEST_TABLE_NAME_INVERTED_INDEX";
-        let table_schema = create_test_table_schema(&table_name);
+        let table_schema = create_test_table_schema(table_name);
         // Ensure table does not exist before creation
         if db
             .table_names()
@@ -138,7 +138,7 @@ mod load_lancedb_test {
     async fn test_create_index_on_embedding() -> Result<()> {
         let mut db = create_test_connection().await?;
         let table_name = "TEST_TABLE_NAME_INDEX";
-        let table_schema = create_test_table_schema(&table_name);
+        let table_schema = create_test_table_schema(table_name);
 
         // Ensure table does not exist before creation
         if db
@@ -206,7 +206,7 @@ mod load_lancedb_test {
     #[tokio::test]
     async fn test_table_schema_creation() {
         let table_name = "TEST_TABLE_NAME_SCHEMA";
-        let table_schema = create_test_table_schema(&table_name);
+        let table_schema = create_test_table_schema(table_name);
 
         assert_eq!(table_schema.name, table_name);
         assert_eq!(table_schema.id.name(), "id");
@@ -220,7 +220,7 @@ mod load_lancedb_test {
     #[tokio::test]
     async fn test_empty_batch_creation() -> Result<()> {
         let table_name = "TEST_TABLE_NAME_EMPTY_BATCH";
-        let table_schema = create_test_table_schema(&table_name);
+        let table_schema = create_test_table_schema(table_name);
         let batch = table_schema.empty_batch()?;
 
         assert_eq!(batch.num_rows(), 256);
