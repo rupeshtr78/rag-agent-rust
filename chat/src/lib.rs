@@ -74,7 +74,7 @@ pub async fn run_chat(
         .context("Failed to get ai chat response")?;
 
     if let Some(m) = response.get_message() {
-        println!("AI Response: {}", m.get_content())
+        println!("AI Response: {:#}", m.get_content())
     }
 
     Ok(response)

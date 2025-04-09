@@ -193,3 +193,24 @@ impl ChatResponse {
         Some(&self.message)
     }
 }
+
+#[allow(dead_code)]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct OpenAiResponse {
+    pub id: Option<String>,
+    pub object: Option<String>,
+    pub created: Option<i64>,
+    pub model: Option<String>,
+    pub choices: Vec<Choice>,
+    pub usage: Option<String>,
+}
+
+#[allow(dead_code)]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Choice {
+    pub text: Option<String>,
+    pub index: Option<i32>,
+    pub message: ChatMessage,
+    pub logprobs: Option<String>,
+    pub finish_reason: Option<String>,
+}

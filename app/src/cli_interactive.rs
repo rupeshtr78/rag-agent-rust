@@ -168,10 +168,9 @@ fn fetch_llm_config(theme: &ColorfulTheme) -> Result<(String, String, String)> {
     let llm_provider = Input::with_theme(theme)
         .with_prompt("LLM provider")
         .validate_with(|input: &String| -> core::result::Result<(), &str> {
-            if input == "openai" || input == "ollama" {
-                Ok(())
-            } else {
-                Err("Please input one of the supported providers:  ollama, openai")
+            match LLMProvider::get_provider(&input.to_lowercase()) {
+                Ok(_) => Ok(()),
+                _ => Err("Please input one of the supported providers: ollama, openai"),
             }
         })
         .default("ollama".to_string())
