@@ -170,5 +170,10 @@ pub async fn run_embedding_pipeline(
     .await
     .context("Failed to create inverted index")?;
 
+    println!(
+        "Embeddings Created in Database: {:?} Table: {:?}",
+        &db_uri, &table_name
+    );
+
     Ok(())
 }
