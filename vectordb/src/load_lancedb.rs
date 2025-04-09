@@ -226,7 +226,7 @@ pub async fn create_record_batch(
     };
 
     let metadata_array = Arc::new(StringArray::from_iter_values(
-        std::iter::repeat(dir_name).take(len).map(|s| s.to_string()),
+        std::iter::repeat_n(dir_name, len).map(|s| s.to_string()),
     ));
 
     // let metadata_array = Arc::new(StringArray::from_iter_values(

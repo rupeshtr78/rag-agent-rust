@@ -3,12 +3,12 @@ pub mod model_options;
 pub mod prompt_template;
 
 use crate::chat_config::ChatRequest;
-use anyhow::{Context, anyhow};
+use anyhow::{anyhow, Context};
 use bytes::Bytes;
 use chat_config::ChatMessage;
 use chat_config::ChatResponse;
-use configs::HttpsClient;
 use configs::constants::CHAT_RESPONSE_FORMAT;
+use configs::HttpsClient;
 use http_body_util::Full;
 use log::{debug, info};
 use serde_json::Value;
@@ -95,7 +95,7 @@ pub async fn run_chat_with_history(
     api_url: &str,
     api_key: &str,
     ai_model: &str,
-    input_fn : fn() -> String,
+    input_fn: fn() -> String,
     continue_chat: bool,
 ) -> anyhow::Result<()> {
     println!("Starting LLM chat with history...");
@@ -150,7 +150,7 @@ pub async fn run_chat_with_history(
             let pretty_json =
                 serde_json::to_string_pretty(&json_value).context("Failed to pretty print JSON")?;
 
-            println!("AI Response: {}", pretty_json);
+            println!("AI Response: {:#}", pretty_json);
         } else {
             println!("AI Response: None");
         }
@@ -224,6 +224,7 @@ pub async fn ai_chat(
         .await?
         .to_bytes();
     // debug!("Response body: {:?}", body.len());
+    debug!("AI Reponse body {:?}", &body);
 
     let response_body: ChatResponse =
         serde_json::from_slice(&body).context("Failed to parse response")?;

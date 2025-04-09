@@ -45,7 +45,7 @@ fn get_file_name(root_dir: &str) -> String {
 /// # Returns
 /// * `Result<()>` - The result of the operation
 pub async fn run_embedding_pipeline(
-    path: &String,
+    path: &str,
     chunk_size: usize,
     provider: &str,
     embed_url: &str,
@@ -54,7 +54,7 @@ pub async fn run_embedding_pipeline(
     https_client: &HttpsClient,
 ) -> Result<()> {
     // Load the codebase into chunks
-    let chunks = code_loader::load_codebase_into_chunks(&path, chunk_size)
+    let chunks = code_loader::load_codebase_into_chunks(path, chunk_size)
         .await
         .context("Failed to split codebase into chunks")?;
 
@@ -71,7 +71,7 @@ pub async fn run_embedding_pipeline(
     }
 
     // Initialize the database
-    let file_name = get_file_name(&path);
+    let file_name = get_file_name(path);
     let db_uri = format!("{}_{}", &file_name, "db");
     let mut db = lancedb::connect(&db_uri)
         .execute()

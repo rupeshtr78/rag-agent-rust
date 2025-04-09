@@ -62,6 +62,12 @@ pub struct OptionsBuilder {
     options: Options,
 }
 
+impl Default for OptionsBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl OptionsBuilder {
     pub fn new() -> Self {
         OptionsBuilder {

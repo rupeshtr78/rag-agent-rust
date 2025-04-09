@@ -1,7 +1,7 @@
 use crate::model_options::Options;
 use crate::prompt_template::Prompt;
 use anyhow::Result;
-use anyhow::{Context, anyhow};
+use anyhow::{anyhow, Context};
 use configs::constants::{self, OPEN_AI_CHAT_API, OPEN_AI_URL};
 use log::debug;
 use serde::{Deserialize, Serialize};
@@ -49,7 +49,7 @@ impl ChatMessage {
         let content = self.get_content();
         if let Ok(parsed_json) = serde_json::from_str::<Value>(content) {
             if let Ok(pretty_json) = serde_json::to_string_pretty(&parsed_json) {
-                println!("AI Response {}", pretty_json);
+                println!("AI Response {:#}", pretty_json);
             } else {
                 eprintln!("Failed to pretty print the JSON.");
             }
@@ -124,7 +124,7 @@ impl ChatRequest {
         let user_prompt = ChatMessage::new(ChatRole::User, prompt.prompt);
         messages.push(user_prompt);
 
-        let provider = LLMProvider::get_provider(provider).unwrap_or_else(|_| LLMProvider::Ollama); // Default to Ollama if not specified
+        let provider = LLMProvider::get_provider(provider).unwrap_or(LLMProvider::Ollama); // Default to Ollama if not specified
 
         let model = model.to_string();
         ChatRequest {
@@ -173,11 +173,11 @@ impl ChatRequest {
 /// ChatResponse is a struct that represents a chat response
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ChatResponse {
-    pub model: String,
-    created_at: String,
+    pub model: Option<String>,
+    created_at: Option<String>,
     pub message: ChatMessage,
     done_reason: Option<String>,
-    done: bool,
+    done: Option<bool>,
     pub context: Option<Vec<i32>>,
     total_duration: Option<i64>,
     load_duration: Option<i64>,
