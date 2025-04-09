@@ -227,7 +227,10 @@ pub async fn ai_chat(
         .await?
         .to_bytes();
     // debug!("Response body: {:?}", body.len());
-    debug!("AI Reponse body {:?}", &body);
+    debug!(
+        "AI Reponse body {:#?}",
+        std::str::from_utf8(&body).unwrap_or("Invalid UTF-8 sequence")
+    );
 
     let response_body: ChatResponse =
         serde_json::from_slice(&body).context("Failed to parse response")?;

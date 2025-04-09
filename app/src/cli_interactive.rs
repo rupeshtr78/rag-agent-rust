@@ -1,5 +1,6 @@
 use crate::commands::Commands;
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
+use chat::chat_config::LLMProvider;
 use configs::constants::{
     AI_MODEL, CHAT_API_KEY, CHAT_API_URL, EMBEDDING_MODEL, OPEN_AI_URL, SYSTEM_PROMPT_PATH,
 };
@@ -163,13 +164,21 @@ pub fn interactive_cli() -> Result<Commands> {
     }
 }
 
-fn fetch_llm_config(theme: &ColorfulTheme) -> Result<(String, String, String), anyhow::Error> {
+fn fetch_llm_config(theme: &ColorfulTheme) -> Result<(String, String, String)> {
     let llm_provider = Input::with_theme(theme)
         .with_prompt("LLM provider")
+        .validate_with(|input: &String| -> core::result::Result<(), &str> {
+            if input == "openai" || input == "ollama" {
+                Ok(())
+            } else {
+                Err("Please input one of the supported providers:  ollama, openai")
+            }
+        })
         .default("ollama".to_string())
         .interact_text()?;
 
-    let chat_api_url = get_chat_api_url(&llm_provider);
+    let chat_api_url =
+        get_chat_api_url(&llm_provider).context("Provided LLm Provider not supported")?;
 
     let api_url = Input::with_theme(theme)
         .with_prompt("Chat API Url")
@@ -184,10 +193,11 @@ fn fetch_llm_config(theme: &ColorfulTheme) -> Result<(String, String, String), a
     Ok((llm_provider, api_url, api_key))
 }
 
-fn get_chat_api_url(provider: &str) -> String {
-    match provider.to_lowercase().as_str() {
-        "openai" => OPEN_AI_URL.to_string(),
-        "ollama" => CHAT_API_URL.to_string(),
-        _ => String::from("Unknown provider"),
+fn get_chat_api_url(provider: &str) -> Result<String> {
+    let provider =
+        LLMProvider::get_provider(provider).map_err(|_| anyhow!("Unsupported provider"))?;
+    match provider {
+        LLMProvider::OpenAI => Ok(OPEN_AI_URL.to_string()),
+        LLMProvider::Ollama => Ok(CHAT_API_URL.to_string()),
     }
 }
