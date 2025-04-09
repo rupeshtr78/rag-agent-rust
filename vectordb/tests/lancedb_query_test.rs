@@ -1,6 +1,5 @@
 #[allow(unused_imports)]
 #[allow(unused)]
-
 mod test_lancedb_query {
     use anyhow::Context;
     use anyhow::Result;
@@ -17,7 +16,7 @@ mod test_lancedb_query {
     use lancedb::query::IntoQueryVector;
     use std::sync::Arc;
     use tokio::sync::RwLock;
-    
+
     use vectordb::load_lancedb::{
         create_index_on_embedding, create_inverted_index, create_lance_table, create_record_batch,
         insert_embeddings, TableSchema,

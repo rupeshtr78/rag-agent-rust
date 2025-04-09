@@ -8,10 +8,10 @@ mod tests {
 
     #[test]
     fn test_language_from_str() {
-        assert_eq!(Language::from_str("rs"), Language::Rust);
-        assert_eq!(Language::from_str("py"), Language::Python);
-        assert_eq!(Language::from_str("unknown"), Language::UNKNOWN);
-        assert_eq!(Language::from_str("nonexistent"), Language::UNKNOWN);
+        assert_eq!(Language::parse_language("rs"), Language::Rust);
+        assert_eq!(Language::parse_language("py"), Language::Python);
+        assert_eq!(Language::parse_language("unknown"), Language::UNKNOWN);
+        assert_eq!(Language::parse_language("nonexistent"), Language::UNKNOWN);
     }
 
     #[test]

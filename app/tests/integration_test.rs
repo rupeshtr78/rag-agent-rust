@@ -48,7 +48,7 @@ mod integration_tests {
         // Execute rag-query
         cli(commands, rt)?;
         // Add assertions for no errors or expected output
-        assert!(true, "RAG query executed successfully");
+        // assert!(true, "RAG query executed successfully");
 
         Ok(())
     }

@@ -139,6 +139,7 @@ pub async fn run_chat_with_history(
         let ai_message = response.get_message();
         if let Some(message) = ai_message {
             let content = message.get_content();
+            // Add content to chat history
             let chat_history = ChatMessage::new(chat_config::ChatRole::User, content.to_string());
             history.push(Some(chat_history));
 

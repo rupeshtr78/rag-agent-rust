@@ -15,7 +15,7 @@ pub struct Prompt {
 impl Prompt {
     pub(crate) async fn new(
         path: &str,
-        contents: &Vec<Option<ChatMessage>>,
+        contents: &[Option<ChatMessage>],
         prompt: &str,
     ) -> Result<Prompt> {
         let system_prompt = get_system_prompt(path)
@@ -23,7 +23,7 @@ impl Prompt {
             .context("Failed to get system prompt")?;
         let prompt = Prompt {
             system_message: system_prompt,
-            content: contents.clone(),
+            content: Vec::from(contents),
             prompt: prompt.to_string(),
         };
         Ok(prompt)
