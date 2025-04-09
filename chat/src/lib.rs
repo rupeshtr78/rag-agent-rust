@@ -23,6 +23,7 @@ use tokio::sync::RwLock;
 /// * `context` - The context to send to the AI model
 /// # Returns
 /// * `Result<()>` - The result of the chatbot
+#[allow(clippy::too_many_arguments)]
 pub async fn run_chat(
     system_prompt: &str,
     ai_prompt: &str,
@@ -86,6 +87,7 @@ pub async fn run_chat(
 /// * `client` - The HTTP client to use for requests
 /// # Returns
 /// * `Result<()>` - The result of the chatbot
+#[allow(clippy::too_many_arguments)]
 pub async fn run_chat_with_history(
     system_prompt: &str,
     initial_prompt: &str,

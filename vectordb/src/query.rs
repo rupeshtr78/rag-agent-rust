@@ -28,6 +28,7 @@ use log::{debug, error};
 /// 
 /// Returns:
 /// - Result<Vec<String>>
+#[allow(clippy::too_many_arguments)]
 pub async fn run_query(
     db: &mut Connection,
     provider: &str,

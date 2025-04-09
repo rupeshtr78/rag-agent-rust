@@ -101,6 +101,7 @@ struct ChatBody {
     options: Option<Options>,
 }
 
+#[allow(clippy::too_many_arguments)]
 impl ChatRequest {
     pub(crate) fn new(
         provider: &str,
