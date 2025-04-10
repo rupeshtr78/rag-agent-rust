@@ -96,7 +96,8 @@ struct ChatBody {
     model: String,
     pub messages: Vec<ChatMessage>,
     stream: bool,
-    format: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    format: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     options: Option<Options>,
 }
@@ -141,11 +142,16 @@ impl ChatRequest {
     }
 
     pub(crate) fn create_chat_body(&self) -> Result<String> {
+        let format = if self.format.is_empty() {
+            Some("text".to_string())
+        } else {
+            None
+        };
         let chat_body = ChatBody {
             model: self.model.to_string(),
             messages: self.messages.clone(),
             stream: self.stream,
-            format: self.format.to_string(),
+            format,
             options: self.options.clone(),
         };
 
@@ -191,5 +197,60 @@ pub struct ChatResponse {
 impl ChatResponse {
     pub fn get_message(&self) -> Option<&ChatMessage> {
         Some(&self.message)
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct OpenAiResponse {
+    pub id: Option<String>,
+    pub object: Option<String>,
+    pub created: Option<i64>,
+    pub model: Option<String>,
+    pub choices: Vec<Choice>,
+    pub usage: Option<Usage>,
+    pub service_tier: Option<String>,
+    pub system_fingerprint: Option<String>,
+}
+
+#[allow(dead_code)]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Choice {
+    pub text: Option<String>,
+    pub index: Option<i32>,
+    pub message: ChatMessage,
+    pub logprobs: Option<String>,
+    pub finish_reason: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Usage {}
+
+impl OpenAiResponse {
+    pub fn get_message(&self) -> Option<&ChatMessage> {
+        if self.choices.is_empty() {
+            return None;
+        }
+        Some(&self.choices[0].message)
+    }
+}
+
+/// ChatResponseTrait is a trait that defines the methods for chat responses
+pub trait ChatResponseTrait {
+    fn get_message(&self) -> Option<&ChatMessage>;
+}
+
+impl ChatResponseTrait for ChatResponse {
+    fn get_message(&self) -> Option<&ChatMessage> {
+        Some(&self.message)
+    }
+}
+
+impl ChatResponseTrait for OpenAiResponse {
+    fn get_message(&self) -> Option<&ChatMessage> {
+        if self.choices.is_empty() {
+            return None;
+        }
+        Some(&self.choices[0].message)
     }
 }

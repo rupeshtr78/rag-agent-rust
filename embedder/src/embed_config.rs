@@ -1,7 +1,6 @@
 // add configs here
-use tokio::sync::RwLock;
 use configs::constants;
-
+use tokio::sync::RwLock;
 
 #[derive(serde::Serialize, Debug, Clone)]
 
@@ -109,8 +108,11 @@ impl EmbedRequest {
         match self.provider.to_lowercase().as_str() {
             "openai" => format!(
                 "{}/{}",
-                constants::OPEN_AI_URL,
-                constants::OPEN_AI_EMBED_API
+                // @TODO - this would need Embed Response rework
+                // constants::OPEN_AI_URL,
+                // constants::OPEN_AI_EMBED_API
+                constants::CHAT_API_URL,
+                constants::OLLAMA_EMBED_API
             ),
             "ollama" => format!("{}/{}", self.api_url, constants::OLLAMA_EMBED_API),
             _ => panic!("Unsupported provider"),

@@ -7,11 +7,13 @@ use anyhow::{anyhow, Context};
 use bytes::Bytes;
 use chat_config::ChatMessage;
 use chat_config::ChatResponse;
+use chat_config::ChatResponseTrait;
+use chat_config::LLMProvider;
+use chat_config::OpenAiResponse;
 use configs::constants::CHAT_RESPONSE_FORMAT;
 use configs::HttpsClient;
 use http_body_util::Full;
 use log::{debug, info};
-use serde_json::Value;
 use std::io::Write;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -33,7 +35,7 @@ pub async fn run_chat(
     api_url: &str,
     api_key: &str,
     ai_model: &str,
-) -> anyhow::Result<ChatResponse> {
+) -> anyhow::Result<()> {
     info!("Starting LLM chat...");
 
     let cm = ChatMessage::new(
@@ -73,11 +75,15 @@ pub async fn run_chat(
         .await
         .context("Failed to get ai chat response")?;
 
-    if let Some(m) = response.get_message() {
-        println!("AI Response: {}", m.get_content())
+    let response_message = response.get_message();
+
+    if let Some(m) = response_message {
+        println!("AI Response: {:#}", m.get_content());
     }
 
-    Ok(response)
+    Ok(())
+
+    // Ok(response)
 }
 
 /// Run the chatbot with history
@@ -115,7 +121,9 @@ pub async fn run_chat_with_history(
             .await
             .context("Failed to create prompt")?;
 
-        let options = model_options::OptionsBuilder::new().num_ctx(128000).build();
+        // @TODO : Add this as command line argument
+        // let options = model_options::OptionsBuilder::new().num_ctx(128000).build();
+        // let options = None;
 
         let chat_request = chat_config::ChatRequest::new(
             provider,
@@ -124,7 +132,7 @@ pub async fn run_chat_with_history(
             api_key.to_string(),
             false,
             CHAT_RESPONSE_FORMAT.to_string(),
-            Some(options),
+            None,
             prompt,
         );
 
@@ -146,14 +154,14 @@ pub async fn run_chat_with_history(
             history.push(Some(chat_history));
 
             // Parse the JSON string into a serde_json::Value
-            let json_value: Value = serde_json::from_str(content)
-                .with_context(|| format!("Failed to parse JSON: {}", content))?;
+            // let json_value: Value = serde_json::from_str(content)
+            //     .with_context(|| format!("Failed to parse JSON: {}", content))?;
 
             // Pretty-print the JSON with indentation
-            let pretty_json =
-                serde_json::to_string_pretty(&json_value).context("Failed to pretty print JSON")?;
+            // let pretty_json =
+            //     serde_json::to_string_pretty(&content).context("Failed to pretty print JSON")?;
 
-            println!("AI Response: {:#}", pretty_json);
+            println!("AI Response: {:#}", &content);
         } else {
             println!("AI Response: None");
         }
@@ -193,7 +201,7 @@ pub fn get_chat_input() -> String {
 pub async fn ai_chat(
     chat_request: &Arc<RwLock<ChatRequest>>,
     http_client: &HttpsClient,
-) -> anyhow::Result<ChatResponse> {
+) -> anyhow::Result<Box<dyn ChatResponseTrait + Send + Sync>> {
     let chat_request = chat_request.read().await;
 
     let chat_url = chat_request.get_chat_api_url()?;
@@ -227,10 +235,32 @@ pub async fn ai_chat(
         .await?
         .to_bytes();
     // debug!("Response body: {:?}", body.len());
-    debug!("AI Reponse body {:?}", &body);
+    debug!(
+        "AI Reponse body {:#?}",
+        std::str::from_utf8(&body).unwrap_or("Invalid UTF-8 sequence")
+    );
 
-    let response_body: ChatResponse =
-        serde_json::from_slice(&body).context("Failed to parse response")?;
+    let provider = &chat_request.provider;
 
-    Ok(response_body)
+    match provider {
+        // Handle the OpenAI provider
+        LLMProvider::OpenAI => {
+            let openai_response: OpenAiResponse =
+                serde_json::from_slice(&body).context("Failed to parse OpenAI response")?;
+            debug!("OpenAI Response: {:?}", openai_response);
+            Ok(Box::new(openai_response))
+        }
+        // Handle the Ollama provider
+        LLMProvider::Ollama => {
+            let ollama_response: ChatResponse =
+                serde_json::from_slice(&body).context("Failed to parse OpenAI response")?;
+            debug!("Ollama Response: {:?}", ollama_response);
+            Ok(Box::new(ollama_response))
+        }
+    }
+
+    // let response_body: ChatResponse =
+    //     serde_json::from_slice(&body).context("Failed to parse response")?;
+
+    // Ok(response_body)
 }
