@@ -96,7 +96,8 @@ struct ChatBody {
     model: String,
     pub messages: Vec<ChatMessage>,
     stream: bool,
-    format: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    format: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     options: Option<Options>,
 }
@@ -141,11 +142,16 @@ impl ChatRequest {
     }
 
     pub(crate) fn create_chat_body(&self) -> Result<String> {
+        let format = if self.format.is_empty() {
+            Some("text".to_string())
+        } else {
+            None
+        };
         let chat_body = ChatBody {
             model: self.model.to_string(),
             messages: self.messages.clone(),
             stream: self.stream,
-            format: self.format.to_string(),
+            format,
             options: self.options.clone(),
         };
 

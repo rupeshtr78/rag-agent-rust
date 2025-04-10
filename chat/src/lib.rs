@@ -122,7 +122,9 @@ pub async fn run_chat_with_history(
             .await
             .context("Failed to create prompt")?;
 
-        let options = model_options::OptionsBuilder::new().num_ctx(128000).build();
+        // @TODO : Add this as command line argument
+        // let options = model_options::OptionsBuilder::new().num_ctx(128000).build();
+        // let options = None;
 
         let chat_request = chat_config::ChatRequest::new(
             provider,
@@ -131,7 +133,7 @@ pub async fn run_chat_with_history(
             api_key.to_string(),
             false,
             CHAT_RESPONSE_FORMAT.to_string(),
-            Some(options),
+            None,
             prompt,
         );
 
