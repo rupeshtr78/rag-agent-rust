@@ -8,14 +8,14 @@ This repository features a Rust-based system for managing vector embeddings, ena
 - [Features](#features)
 - [Directory Structure](#directory-structure)
 - [Getting Started](#getting-started)
-    - [Prerequisites](#prerequisites)
-    - [Installation](#installation)
-    - [Running the Application](#running-the-application)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running the Application](#running-the-application)
 - [Usage](#usage)
-    - [Commands](#commands)
-    - [Configuration](#configuration)
-    - [Embedding and Querying](#embedding-and-querying)
-    - [Chat Integration](#chat-integration)
+  - [Commands](#commands)
+  - [Configuration](#configuration)
+  - [Embedding and Querying](#embedding-and-querying)
+  - [Chat Integration](#chat-integration)
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [License](#license)
@@ -31,16 +31,17 @@ The system is composed of several modules that handle different aspects of the e
 - **VectorDB**: Handles interactions with the lancedb vector database for storing and querying vector embeddings.
 - **Chat**: Integrates with the Ollama LLM model to provide interactive chat functionalities based on retrieved embeddings.
 - **TODO**: Adding Tests, Adding PDF Support, Adding Agent refactor
+
 ## Features
 
 - **File Type Support**: The tool supports multiple file types including Rust (`rs`), Python (`py`), C++ (`cpp`), Java (`java`), JavaScript (`js`), TypeScript (`ts`), and text files. (TODO: Add PDF support)
 - **LanceDB Integration**:
-    - Create and manage vector tables in LanceDB.
-    - Insert and update records in LanceDB tables.
-    - Query the nearest vectors in LanceDB tables.
+  - Create and manage vector tables in LanceDB.
+  - Insert and update records in LanceDB tables.
+  - Query the nearest vectors in LanceDB tables.
 - **Embedding**:
-    - Generate embeddings for text data using an external embedding service.
-    - Store embeddings in LanceDB tables.
+  - Generate embeddings for text data using an external embedding service.
+  - Store embeddings in LanceDB tables.
 - **CLI Interface**: Command-line interface for easy interaction with the tool.
 - **Database Persistence**: Store embeddings in a lance vector database.
 - **Querying**: Query the database to find nearest neighbors based on vector embeddings.
@@ -77,7 +78,7 @@ The system is composed of several modules that handle different aspects of the e
    ```sh
    cargo run -- --help
 
-   
+
    ```
 
 ## Usage
@@ -97,6 +98,13 @@ Commands:
 The application supports various commands and subcommands. Use the `--help` flag to see available options:
 
 ```sh
+# run in interactive cli mode
+cargo run -- -o true
+
+# Debug mode
+cargo run -- -o true -l debug
+
+
 # Generate embeddings and store them in the database
 cargo run -- load -p sample/
 
@@ -124,7 +132,7 @@ Configuration settings for embedding requests, database connections, and chat in
 
 The test suite requires Ollama with an embedding and LLM model to be running in the correct configuration.
 
-* TODO missing test
+- TODO missing test
 
 ```sh
 cargo test
