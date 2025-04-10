@@ -202,7 +202,9 @@ pub struct OpenAiResponse {
     pub created: Option<i64>,
     pub model: Option<String>,
     pub choices: Vec<Choice>,
-    pub usage: Option<String>,
+    pub usage: Option<Usage>,
+    pub service_tier: Option<String>,
+    pub system_fingerprint: Option<String>,
 }
 
 #[allow(dead_code)]
@@ -213,4 +215,36 @@ pub struct Choice {
     pub message: ChatMessage,
     pub logprobs: Option<String>,
     pub finish_reason: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Usage {}
+
+impl OpenAiResponse {
+    pub fn get_message(&self) -> Option<&ChatMessage> {
+        if self.choices.is_empty() {
+            return None;
+        }
+        Some(&self.choices[0].message)
+    }
+}
+
+/// ChatResponseTrait is a trait that defines the methods for chat responses
+pub trait ChatResponseTrait {
+    fn get_message(&self) -> Option<&ChatMessage>;
+}
+
+impl ChatResponseTrait for ChatResponse {
+    fn get_message(&self) -> Option<&ChatMessage> {
+        Some(&self.message)
+    }
+}
+
+impl ChatResponseTrait for OpenAiResponse {
+    fn get_message(&self) -> Option<&ChatMessage> {
+        if self.choices.is_empty() {
+            return None;
+        }
+        Some(&self.choices[0].message)
+    }
 }
