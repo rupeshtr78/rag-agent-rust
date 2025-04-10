@@ -7,9 +7,11 @@ pub struct Agent {
     pub ai_model: String,
     pub table: String,
     pub database: String,
+    pub mcp_client: Option<FnMut(&str) -> Result<Vec<String>>>,
 }
 
 impl Agent {
+    
     pub async fn Load(
         &self,
         rt: tokio::runtime::Runtime,
