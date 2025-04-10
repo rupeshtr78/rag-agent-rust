@@ -14,7 +14,6 @@ use configs::constants::CHAT_RESPONSE_FORMAT;
 use configs::HttpsClient;
 use http_body_util::Full;
 use log::{debug, info};
-use serde_json::Value;
 use std::io::Write;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -155,14 +154,14 @@ pub async fn run_chat_with_history(
             history.push(Some(chat_history));
 
             // Parse the JSON string into a serde_json::Value
-            let json_value: Value = serde_json::from_str(content)
-                .with_context(|| format!("Failed to parse JSON: {}", content))?;
+            // let json_value: Value = serde_json::from_str(content)
+            //     .with_context(|| format!("Failed to parse JSON: {}", content))?;
 
             // Pretty-print the JSON with indentation
-            let pretty_json =
-                serde_json::to_string_pretty(&json_value).context("Failed to pretty print JSON")?;
+            // let pretty_json =
+            //     serde_json::to_string_pretty(&content).context("Failed to pretty print JSON")?;
 
-            println!("AI Response: {:#}", pretty_json);
+            println!("AI Response: {:#}", &content);
         } else {
             println!("AI Response: None");
         }
