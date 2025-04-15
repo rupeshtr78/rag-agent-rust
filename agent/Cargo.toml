@@ -10,3 +10,4 @@ embedder = { path = "../embedder" }
 chat = { path = "../chat" }
 tokio.workspace = true
 anyhow.workspace = true
+lancedb.workspace = true
