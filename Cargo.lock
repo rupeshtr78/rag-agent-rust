@@ -26,6 +26,7 @@ dependencies = [
  "configs",
  "embedder",
  "lancedb",
+ "log",
  "tokio",
  "vectordb",
 ]

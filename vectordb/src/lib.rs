@@ -190,6 +190,10 @@ pub async fn run_embedding_pipeline(
     );
 
     let embeddings = EmbeddingStore::new(&db_uri, &table_name);
+    debug!(
+        "Load Succesfull to table: {:?}, database: {:?}",
+        &embeddings.table, &embeddings.db
+    );
 
     Ok(embeddings)
 }

@@ -11,3 +11,4 @@ chat = { path = "../chat" }
 tokio.workspace = true
 anyhow.workspace = true
 lancedb.workspace = true
+log.workspace = true

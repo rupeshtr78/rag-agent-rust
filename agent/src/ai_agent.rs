@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use log::debug;
 
 pub struct LLMProvider {
     pub provider: String,
