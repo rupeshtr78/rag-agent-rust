@@ -10,14 +10,14 @@ pub struct Agent {
     pub mcp_client: Option<FnMut(&str) -> Result<Vec<String>>>,
 }
 
-impl Agent {
-    
-    pub async fn Load(
-        &self,
-        rt: tokio::runtime::Runtime,
-        path: &str,
-        chunk_size: usize,
-    ) -> Result<()> {
+pub trait Agents {
+    fn load(&self, rt: tokio::runtime::Runtime, path: &str, chunk_size: usize) -> Result<()>;
+    fn lance_query(&self, rt: tokio::runtime::Runtime, input: Vec<String>) -> Result<()>;
+    fn rag_query(&self, rt: tokio::runtime::Runtime, input: Vec<String>) -> Result<()>;
+}
+
+impl Agents for Agent {
+    async fn load(&self, rt: tokio::runtime::Runtime, path: &str, chunk_size: usize) -> Result<()> {
         // Load the embedding
         let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
         rt.block_on(check_connection(
@@ -40,7 +40,7 @@ impl Agent {
         println!("Finished Loading the embedding");
         Ok(())
     }
-    pub async fn LanceQuery(&self, rt: tokio::runtime::Runtime, input: Vec<String>) -> Result<()> {
+    async fn lance_query(&self, rt: tokio::runtime::Runtime, input: Vec<String>) -> Result<()> {
         // Query the Lance Vector Database
         let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
         rt.block_on(check_connection(
@@ -63,7 +63,7 @@ impl Agent {
         println!("Finished Lance Query");
         Ok(())
     }
-    pub async fn RagQuery(&self, input: Vec<String>) -> Result<()> {
+    async fn rag_query(&self, rt: tokio::runtime::Runtime, input: Vec<String>) -> Result<()> {
         // Query the Lance Vector Database
         let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
         rt.block_on(check_connection(
