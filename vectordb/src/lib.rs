@@ -30,6 +30,20 @@ fn get_file_name(root_dir: &str) -> String {
     file_name
 }
 
+pub struct EmbeddingStore {
+    db: String,
+    table: String,
+}
+
+impl EmbeddingStore {
+    fn new(db: &str, table: &str) -> Self {
+        EmbeddingStore {
+            db: db.to_owned(),
+            table: table.to_owned(),
+        }
+    }
+}
+
 /// Run the LanceVectorDB pipeline
 /// 1. Load the codebase into chunks
 /// 2. Extract the embed requests from the chunks
@@ -52,7 +66,7 @@ pub async fn run_embedding_pipeline(
     api_key: &str,
     model: &str,
     https_client: &HttpsClient,
-) -> Result<()> {
+) -> Result<EmbeddingStore> {
     // Load the codebase into chunks
     let chunks = code_loader::load_codebase_into_chunks(path, chunk_size)
         .await
@@ -175,5 +189,7 @@ pub async fn run_embedding_pipeline(
         &db_uri, &table_name
     );
 
-    Ok(())
+    let embeddings = EmbeddingStore::new(&db_uri, &table_name);
+
+    Ok(embeddings)
 }
