@@ -1,7 +1,8 @@
 use anyhow::{Context, Result};
 use log::debug;
+use vectordb::EmbeddingStore;
 
-pub struct LLMProvider {
+pub struct ModelAPIProvider {
     pub provider: String,
     pub api_url: String,
     pub api_key: String,
@@ -16,40 +17,30 @@ pub struct AIModel {
 }
 
 pub struct Agent {
-    pub llm_provider: LLMProvider,
+    pub llm_provider: ModelAPIProvider,
     pub embedding_model: EmbeddingModel,
     pub ai_model: AIModel,
-    pub table: String,
-    pub database: String,
+    // pub agent: Option<FnMut(&str> -> Result<Vec<String>>>,
 }
 
 impl Agent {
     pub fn new(
-        llm_provider: LLMProvider,
+        llm_provider: ModelAPIProvider,
         embedding_model: EmbeddingModel,
         ai_model: AIModel,
-        table: String,
-        database: String,
     ) -> Self {
         Agent {
             llm_provider,
             embedding_model,
             ai_model,
-            table,
-            database,
         }
     }
 
-    pub fn load_embeddings(
-        &self,
-        rt: tokio::runtime::Runtime,
-        path: &str,
-        chunk_size: usize,
-    ) -> Result<()> {
+    pub async fn load_embeddings(&self, path: &str, chunk_size: usize) -> Result<EmbeddingStore> {
         // Load the embedding
         let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
 
-        rt.block_on(vectordb::run_embedding_pipeline(
+        let embedding_store = vectordb::run_embedding_pipeline(
             &path.to_string(),
             chunk_size,
             self.llm_provider.provider.as_str(),
@@ -57,50 +48,56 @@ impl Agent {
             &self.llm_provider.api_key,
             self.embedding_model.model.as_str(),
             &https_client,
-        ))
+        )
+        .await
         .context("Failed to run lance vectordb")?;
 
         println!("Finished Loading the embedding");
-        Ok(())
+        Ok(embedding_store)
     }
 
-    pub fn query_embeddings(
+    pub async fn query_embeddings(
         &self,
-        rt: tokio::runtime::Runtime,
         input: Vec<String>,
         whole_query: bool,
         file_context: bool,
-    ) -> Result<()> {
+        embedding_store: &EmbeddingStore,
+    ) -> Result<Vec<String>> {
         // Query the Lance Vector Database
         let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
 
+        // let db = embedding_store.db;
+        // let table = embedding_store.table;
         // Initialize the database
-        let mut db = rt
-            .block_on(lancedb::connect(&self.database).execute())
+        let mut db = lancedb::connect(&embedding_store.db)
+            .execute()
+            .await
             .context("Failed to connect to the database")?;
 
         // Query the database
-        let content = rt
-            .block_on(vectordb::query::run_query(
-                &mut db,
-                self.llm_provider.provider.as_str(),
-                self.llm_provider.api_url.as_str(),
-                self.llm_provider.api_key.as_str(),
-                self.embedding_model.model.as_str(),
-                &input,
-                &self.table,
-                &https_client,
-                whole_query,
-                file_context,
-            ))
-            .context("Failed to run lance query")?;
+        let content = vectordb::query::run_query(
+            &mut db,
+            self.llm_provider.provider.as_str(),
+            self.llm_provider.api_url.as_str(),
+            self.llm_provider.api_key.as_str(),
+            self.embedding_model.model.as_str(),
+            &input,
+            &embedding_store.table,
+            &https_client,
+            whole_query,
+            file_context,
+        )
+        .await
+        .context("Failed to run lance query")?;
 
         println!("Query Response: {:?}", content);
-        Ok(())
+        Ok(content)
     }
 
     pub fn rag_query(
         &self,
+        path: &str,
+        chunk_size: usize,
         rt: tokio::runtime::Runtime,
         input: Vec<String>,
         whole_query: bool,
@@ -111,26 +108,20 @@ impl Agent {
         // Query the Lance Vector Database
         let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
 
-        // Initialize the database
-        let mut db = rt
-            .block_on(lancedb::connect(&self.database).execute())
-            .context("Failed to connect to the database")?;
+        // Load the embedding
+        let embedding_store = rt
+            .block_on(self.load_embeddings(path, chunk_size))
+            .context("Failed to load embeddings")?;
 
-        // Query the database
+        // query the Lance Vector Database
         let content = rt
-            .block_on(vectordb::query::run_query(
-                &mut db,
-                self.llm_provider.provider.as_str(),
-                self.llm_provider.api_url.as_str(),
-                self.llm_provider.api_key.as_str(),
-                self.embedding_model.model.as_str(),
-                &input,
-                &self.table,
-                &https_client,
+            .block_on(self.query_embeddings(
+                input.clone(),
                 whole_query,
                 file_context,
+                &embedding_store,
             ))
-            .context("Failed to run query")?;
+            .with_context(|| "Failed to query embeddings")?;
 
         debug!("Query Response: {:?}", content);
 

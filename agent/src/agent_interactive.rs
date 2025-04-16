@@ -1,12 +1,9 @@
-use crate::commands::Commands;
-use anyhow::{anyhow, Context, Result};
-use chat::chat_config::LLMProvider;
+use crate::ai_agent::{AIModel, Agent, EmbeddingModel, LLMProvider};
+use anyhow::{anyhow, Result};
 use configs::constants::{
     AI_MODEL, CHAT_API_KEY, CHAT_API_URL, EMBEDDING_MODEL, OPEN_AI_URL, SYSTEM_PROMPT_PATH,
 };
 use dialoguer::{console::Term, theme::ColorfulTheme, Confirm, Input, Select};
-
-use agent::ai_agent::{AIModel, Agent, EmbeddingModel, LLMProvider};
 
 pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
     let theme = ColorfulTheme::default();
@@ -27,7 +24,7 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
 
     match commands[command_index] {
         "Load" => {
-            let (llm_provider, api_url, api_key) = fetch_llm_config(&theme)?;
+            let (llm_provider, _, _) = fetch_llm_config(&theme)?;
             let embedding_model = EmbeddingModel {
                 model: Input::with_theme(&theme)
                     .with_prompt("Embedding model")
@@ -37,25 +34,25 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
             let ai_model = AIModel {
                 model: String::new(),
             };
-            let table = String::new();
-            let database = String::new();
 
-            let agent = Agent::new(llm_provider, embedding_model, ai_model, table, database);
-            agent.load_embeddings(
-                rt,
-                &Input::with_theme(&theme)
-                    .with_prompt("Enter file path")
-                    .interact_text()?,
-                Input::with_theme(&theme)
-                    .with_prompt("Enter chunk size")
-                    .default("1024".to_string())
-                    .interact_text()?
-                    .parse::<usize>()?,
+            let agent = Agent::new(llm_provider, embedding_model, ai_model);
+            let embedding_store = rt.block_on(
+                agent.load_embeddings(
+                    &Input::with_theme(&theme)
+                        .with_prompt("Enter file path")
+                        .interact_text()?,
+                    Input::with_theme(&theme)
+                        .with_prompt("Enter chunk size")
+                        .default("1024".to_string())
+                        .interact_text()?
+                        .parse::<usize>()?,
+                ),
             )?;
+            println!("Embedding store: {:?}", embedding_store);
         }
 
         "LanceQuery" => {
-            let (llm_provider, api_url, api_key) = fetch_llm_config(&theme)?;
+            let (llm_provider, _, _) = fetch_llm_config(&theme)?;
             let embedding_model = EmbeddingModel {
                 model: Input::with_theme(&theme)
                     .with_prompt("Embedding model")
@@ -65,6 +62,7 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
             let ai_model = AIModel {
                 model: String::new(),
             };
+
             let table = Input::with_theme(&theme)
                 .with_prompt("Table name")
                 .default("rag_table".to_string())
@@ -74,28 +72,33 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
                 .default("rag_db".to_string())
                 .interact_text()?;
 
-            let agent = Agent::new(llm_provider, embedding_model, ai_model, table, database);
-            agent.query_embeddings(
-                rt,
-                Input::<String>::with_theme(&theme)
-                    .with_prompt("Enter your query")
-                    .interact_text()?
-                    .split(',')
-                    .map(|s| s.to_string())
-                    .collect(),
-                Confirm::with_theme(&theme)
-                    .with_prompt("Use whole query embedding?")
-                    .default(false)
-                    .interact()?,
-                Confirm::with_theme(&theme)
-                    .with_prompt("Use file context?")
-                    .default(false)
-                    .interact()?,
+            let agent = Agent::new(llm_provider, embedding_model, ai_model);
+            let embedding_store = vectordb::EmbeddingStore::new(&table, &database);
+
+            let content = rt.block_on(
+                agent.query_embeddings(
+                    Input::<String>::with_theme(&theme)
+                        .with_prompt("Enter your query")
+                        .interact_text()?
+                        .split(',')
+                        .map(|s| s.to_string())
+                        .collect(),
+                    Confirm::with_theme(&theme)
+                        .with_prompt("Use whole query embedding?")
+                        .default(false)
+                        .interact()?,
+                    Confirm::with_theme(&theme)
+                        .with_prompt("Use file context?")
+                        .default(false)
+                        .interact()?,
+                    &embedding_store,
+                ),
             )?;
+            println!("Query content: {:?}", content);
         }
 
         "RagQuery" => {
-            let (llm_provider, api_url, api_key) = fetch_llm_config(&theme)?;
+            let (llm_provider, _, _) = fetch_llm_config(&theme)?;
             let embedding_model = EmbeddingModel {
                 model: Input::with_theme(&theme)
                     .with_prompt("Embedding model")
@@ -108,17 +111,17 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
                     .default(AI_MODEL.to_string())
                     .interact_text()?,
             };
-            let table = Input::with_theme(&theme)
-                .with_prompt("VectorDB Table")
-                .default("rag_table".to_string())
-                .interact_text()?;
-            let database = Input::with_theme(&theme)
-                .with_prompt("Database URI")
-                .default("rag_db".to_string())
-                .interact_text()?;
 
-            let agent = Agent::new(llm_provider, embedding_model, ai_model, table, database);
+            let agent = Agent::new(llm_provider, embedding_model, ai_model);
             agent.rag_query(
+                &Input::with_theme(&theme)
+                    .with_prompt("Enter file path")
+                    .interact_text()?,
+                Input::with_theme(&theme)
+                    .with_prompt("Enter chunk size")
+                    .default("1024".to_string())
+                    .interact_text()?
+                    .parse::<usize>()?,
                 rt,
                 Input::<String>::with_theme(&theme)
                     .with_prompt("Enter your query")
@@ -146,7 +149,7 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
         }
 
         "Generate" => {
-            let (llm_provider, api_url, api_key) = fetch_llm_config(&theme)?;
+            let (llm_provider, _, _) = fetch_llm_config(&theme)?;
             let embedding_model = EmbeddingModel {
                 model: String::new(),
             };
@@ -156,10 +159,8 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
                     .default(AI_MODEL.to_string())
                     .interact_text()?,
             };
-            let table = String::new();
-            let database = String::new();
 
-            let agent = Agent::new(llm_provider, embedding_model, ai_model, table, database);
+            let agent = Agent::new(llm_provider, embedding_model, ai_model);
             agent.generate(
                 rt,
                 &Input::<String>::with_theme(&theme)

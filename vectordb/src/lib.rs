@@ -31,12 +31,12 @@ fn get_file_name(root_dir: &str) -> String {
 }
 
 pub struct EmbeddingStore {
-    db: String,
-    table: String,
+    pub db: String,
+    pub table: String,
 }
 
 impl EmbeddingStore {
-    fn new(db: &str, table: &str) -> Self {
+    pub fn new(db: &str, table: &str) -> Self {
         EmbeddingStore {
             db: db.to_owned(),
             table: table.to_owned(),
