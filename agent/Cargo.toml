@@ -4,11 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+app = { path = "../app" }
 configs = { path = "../configs" }
 vectordb = { path = "../vectordb" }
-embedder = { path = "../embedder" }
 chat = { path = "../chat" }
+embedder = { path = "../embedder" }
 tokio.workspace = true
 anyhow.workspace = true
 lancedb.workspace = true
 log.workspace = true
+clap.workspace = true
+dialoguer.workspace = true
