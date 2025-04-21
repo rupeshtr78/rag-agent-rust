@@ -41,7 +41,7 @@ impl Agent {
         let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
 
         let embedding_store = vectordb::run_embedding_pipeline(
-            &path.to_string(),
+            path,
             chunk_size,
             self.llm_provider.provider.as_str(),
             &self.llm_provider.api_url,
