@@ -24,6 +24,28 @@ pub fn bench_command_execution(c: &mut Criterion) {
     });
 }
 
+pub fn bench_load_embeddings(c: &mut Criterion) {
+    c.bench_function("Load Embeddings", |b| {
+        b.iter(|| {
+            let rt = Runtime::new().unwrap();
+            let commands = Commands::Load {
+                path: "tests/resources/sample".to_string(),
+                chunk_size: "1000".to_string(),
+                llm_provider: "ollama".to_string(),
+                embed_model: "nomic-embed-text".to_string(),
+                api_url: "http://localhost:11434".to_string(),
+                api_key: "".to_string(),
+            };
+
+            match cli(commands, rt).context("Failed to run load command") {
+                Ok(_) => println!("Load command executed successfully"),
+                Err(err) => eprintln!("Error executing load command: {}", err),
+            }
+            black_box(());
+        });
+    });
+}
+
 pub fn bench_rag_query(c: &mut Criterion) {
     c.bench_function("RAG query", |b| {
         b.iter(|| {
@@ -51,5 +73,5 @@ pub fn bench_rag_query(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_rag_query);
+criterion_group!(benches, bench_load_embeddings, bench_rag_query);
 criterion_main!(benches);
