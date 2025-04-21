@@ -23,3 +23,9 @@ http.workspace = true
 mockito.workspace = true
 tempdir.workspace = true
 dialoguer.workspace = true
+criterion = "0.5.1"
+
+
+[[bench]]
+name = "benchmark"
+harness = false
