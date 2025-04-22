@@ -17,11 +17,11 @@ pub struct Args {
     pub cmd: Option<Commands>,
     #[clap(short, long, global = true)]
     pub log_level: Option<LogLevel>,
-    /// If Interactive Cli is to be used
-    #[clap(short = 'o', long, global = false)]
+    /// Select Cli is to be used
+    #[clap(short = 'o', long, global = false, hide = true)]
     pub interactive: Option<bool>,
-    // Select to run in agent mode
-    #[clap(short = 'g', long, global = false)]
+    /// Select to run in agent mode
+    #[clap(short = 'g', long, global = true)]
     pub agent_mode: Option<bool>,
 }
 

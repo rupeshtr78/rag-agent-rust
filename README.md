@@ -88,9 +88,17 @@ Commands:
   version      Get the version of the application
   load         Load a directory of files into the lance vector database
   lance-query  Query the Lance Vector Database
-  rag-query    Query the Lancedb and chat with the AI with context
+  rag-query    Query the Lance Vector Database and chat with the AI
   generate     Chat with the AI
+  exit         Exit the application
+  man          
   help         Print this message or the help of the given subcommand(s)
+
+Options:
+  -l, --log-level <LOG_LEVEL>    [possible values: debug, info, warn, error, off]
+  -g, --agent-mode <AGENT_MODE>  Select to run in agent mode [possible values: true, false]
+  -h, --help                     Print help
+  -V, --version                  Print version
 ```
 
 ### Commands
