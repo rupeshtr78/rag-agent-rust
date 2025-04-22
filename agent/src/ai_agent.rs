@@ -48,7 +48,7 @@ impl LLMAgent {
 
     pub fn generate(
         &self,
-        rt: tokio::runtime::Runtime,
+        rt: &tokio::runtime::Runtime,
         prompt: &str,
         system_prompt: &str,
     ) -> Result<()> {
@@ -155,7 +155,7 @@ impl RagAgent {
 
     pub fn rag_query(
         &self,
-        rt: tokio::runtime::Runtime,
+        rt: &tokio::runtime::Runtime,
         path: &str,
         chunk_size: usize,
         input: Vec<String>,

@@ -99,10 +99,10 @@ The application supports various commands and subcommands. Use the `--help` flag
 
 ```sh
 # run in interactive cli mode
-cargo run -- -o true
+cargo run -- -g true
 
 # Debug mode
-cargo run -- -o true -l debug
+cargo run -- -g true -l debug
 
 
 # Generate embeddings and store them in the database

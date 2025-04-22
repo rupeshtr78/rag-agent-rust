@@ -249,8 +249,14 @@ pub fn run_app(args: Args, rt: Runtime) -> Result<()> {
     // @TODO fix this
     if let Some(true) = args.agent_mode {
         info!("Running in agent mode");
-        agent::agent_interactive::interactive_cli(rt)
+        agent::agent_interactive::interactive_cli(&rt)
             .context("Failed to run agent interactive CLI")?;
+    }
+
+    if let Some(true) = args.interactive {
+        let commands =
+            cli_interactive::interactive_cli().context("Failed to run interactive CLI")?;
+        cli::cli(commands, rt).context("Failed to run interactive Command")?;
     }
 
     Ok(())

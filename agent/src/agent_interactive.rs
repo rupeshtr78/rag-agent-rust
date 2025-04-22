@@ -6,7 +6,7 @@ use configs::constants::{
 };
 use dialoguer::{console::Term, theme::ColorfulTheme, Confirm, Input, Select};
 
-pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
+pub fn interactive_cli(rt: &tokio::runtime::Runtime) -> Result<()> {
     let theme = ColorfulTheme::default();
     let commands = vec![
         "Load",
