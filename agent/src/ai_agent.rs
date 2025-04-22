@@ -3,7 +3,7 @@ use log::debug;
 use vectordb::EmbeddingStore;
 
 pub struct ModelAPIProvider {
-    pub provider: String,
+    pub provider: String, // TODO use LLMProvider enum
     pub api_url: String,
     pub api_key: String,
 }
