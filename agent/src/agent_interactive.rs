@@ -1,5 +1,6 @@
-use crate::ai_agent::{AIModel, Agent, EmbeddingModel, LLMProvider};
-use anyhow::{anyhow, Result};
+use crate::ai_agent::{AIModel, Agent, EmbeddingModel, ModelAPIProvider};
+use anyhow::{anyhow, Ok, Result};
+use chat::chat_config::LLMProvider;
 use configs::constants::{
     AI_MODEL, CHAT_API_KEY, CHAT_API_URL, EMBEDDING_MODEL, OPEN_AI_URL, SYSTEM_PROMPT_PATH,
 };
@@ -24,7 +25,7 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
 
     match commands[command_index] {
         "Load" => {
-            let (llm_provider, _, _) = fetch_llm_config(&theme)?;
+            let llm_provider = fetch_llm_config(&theme)?;
             let embedding_model = EmbeddingModel {
                 model: Input::with_theme(&theme)
                     .with_prompt("Embedding model")
@@ -36,23 +37,21 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
             };
 
             let agent = Agent::new(llm_provider, embedding_model, ai_model);
-            let embedding_store = rt.block_on(
-                agent.load_embeddings(
-                    &Input::with_theme(&theme)
-                        .with_prompt("Enter file path")
-                        .interact_text()?,
-                    Input::with_theme(&theme)
-                        .with_prompt("Enter chunk size")
-                        .default("1024".to_string())
-                        .interact_text()?
-                        .parse::<usize>()?,
-                ),
-            )?;
+            let path: String = Input::with_theme(&theme)
+                .with_prompt("Enter file path")
+                .interact_text()?;
+            let chunk_size: usize = Input::with_theme(&theme)
+                .with_prompt("Enter chunk size")
+                .default("1024".to_string())
+                .interact_text()?
+                .parse::<usize>()?;
+
+            let embedding_store = rt.block_on(agent.load_embeddings(path.as_str(), chunk_size))?;
             println!("Embedding store: {:?}", embedding_store);
         }
 
         "LanceQuery" => {
-            let (llm_provider, _, _) = fetch_llm_config(&theme)?;
+            let llm_provider = fetch_llm_config(&theme)?;
             let embedding_model = EmbeddingModel {
                 model: Input::with_theme(&theme)
                     .with_prompt("Embedding model")
@@ -98,7 +97,7 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
         }
 
         "RagQuery" => {
-            let (llm_provider, _, _) = fetch_llm_config(&theme)?;
+            let llm_provider = fetch_llm_config(&theme)?;
             let embedding_model = EmbeddingModel {
                 model: Input::with_theme(&theme)
                     .with_prompt("Embedding model")
@@ -113,16 +112,22 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
             };
 
             let agent = Agent::new(llm_provider, embedding_model, ai_model);
+
+            let path: String = Input::with_theme(&theme)
+                .with_prompt("Enter file path")
+                .interact_text()?;
+            let system_prompt: String = Input::with_theme(&theme)
+                .with_prompt("System prompt file path")
+                .default(SYSTEM_PROMPT_PATH.into())
+                .interact_text()?;
             agent.rag_query(
-                &Input::with_theme(&theme)
-                    .with_prompt("Enter file path")
-                    .interact_text()?,
+                rt,
+                &path,
                 Input::with_theme(&theme)
                     .with_prompt("Enter chunk size")
                     .default("1024".to_string())
                     .interact_text()?
                     .parse::<usize>()?,
-                rt,
                 Input::<String>::with_theme(&theme)
                     .with_prompt("Enter your query")
                     .interact_text()?
@@ -137,10 +142,7 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
                     .with_prompt("Use file context?")
                     .default(false)
                     .interact()?,
-                &Input::with_theme(&theme)
-                    .with_prompt("System prompt file path")
-                    .default(SYSTEM_PROMPT_PATH.into())
-                    .interact_text()?,
+                &system_prompt,
                 Confirm::with_theme(&theme)
                     .with_prompt("Continue chat?")
                     .default(true)
@@ -149,7 +151,7 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
         }
 
         "Generate" => {
-            let (llm_provider, _, _) = fetch_llm_config(&theme)?;
+            let llm_provider = fetch_llm_config(&theme)?;
             let embedding_model = EmbeddingModel {
                 model: String::new(),
             };
@@ -189,35 +191,34 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
     Ok(())
 }
 
-fn fetch_llm_config(theme: &ColorfulTheme) -> Result<(LLMProvider, String, String)> {
+fn fetch_llm_config(theme: &ColorfulTheme) -> Result<ModelAPIProvider> {
     let provider = Input::with_theme(theme)
         .with_prompt("LLM provider")
         .validate_with(|input: &String| -> core::result::Result<(), &str> {
             match LLMProvider::get_provider(&input.to_lowercase()) {
-                Ok(_) => Ok(()),
+                std::result::Result::Ok(_) => core::result::Result::Ok(()),
                 _ => Err("Please input one of the supported providers: ollama, openai"),
             }
         })
         .default("ollama".to_string())
         .interact_text()?;
 
-    let llm_provider = LLMProvider {
+    let api_url = Input::with_theme(theme)
+        .with_prompt("Chat API Url")
+        .default(get_chat_api_url(&provider)?.to_string())
+        .interact_text()?;
+    let api_key = Input::with_theme(theme)
+        .with_prompt("API Key")
+        .default(CHAT_API_KEY.to_string())
+        .interact_text()?;
+
+    let llm_provider = ModelAPIProvider {
         provider,
-        api_url: Input::with_theme(theme)
-            .with_prompt("Chat API Url")
-            .default(get_chat_api_url(provider.as_str())?.to_string())
-            .interact_text()?,
-        api_key: Input::with_theme(theme)
-            .with_prompt("API Key")
-            .default(CHAT_API_KEY.to_string())
-            .interact_text()?,
+        api_url,
+        api_key,
     };
 
-    Ok((
-        llm_provider,
-        llm_provider.api_url.clone(),
-        llm_provider.api_key.clone(),
-    ))
+    Ok(llm_provider)
 }
 
 fn get_chat_api_url(provider: &str) -> Result<String> {

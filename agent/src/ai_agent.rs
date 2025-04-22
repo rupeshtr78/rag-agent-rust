@@ -8,6 +8,10 @@ pub struct ModelAPIProvider {
     pub api_key: String,
 }
 
+impl ModelAPIProvider {
+    pub fn get_provider() {}
+}
+
 pub struct EmbeddingModel {
     pub model: String,
 }
@@ -96,9 +100,9 @@ impl Agent {
 
     pub fn rag_query(
         &self,
+        rt: tokio::runtime::Runtime,
         path: &str,
         chunk_size: usize,
-        rt: tokio::runtime::Runtime,
         input: Vec<String>,
         whole_query: bool,
         file_context: bool,

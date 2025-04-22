@@ -20,6 +20,9 @@ pub struct Args {
     /// If Interactive Cli is to be used
     #[clap(short = 'o', long, global = false)]
     pub interactive: Option<bool>,
+    // Select to run in agent mode
+    #[clap(short = 'g', long, global = false)]
+    pub agent_mode: Option<bool>,
 }
 
 #[derive(Subcommand, Debug)]
@@ -240,6 +243,13 @@ pub fn run_app(args: Args, rt: Runtime) -> Result<()> {
             });
             cli::cli(commands, rt).context("Failed to run inline Command")?;
         }
+    }
+
+    match args.agent_mode {
+        Some(true) => {
+            info!("Running in agent mode");
+        }
+        _ => {}
     }
 
     Ok(())

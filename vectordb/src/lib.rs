@@ -29,7 +29,7 @@ fn get_file_name(root_dir: &str) -> String {
     debug!("File Name: {}", file_name);
     file_name
 }
-
+#[derive(Debug)]
 pub struct EmbeddingStore {
     pub db: String,
     pub table: String,

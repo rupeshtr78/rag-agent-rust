@@ -17,6 +17,7 @@ pub fn bench_command_execution(c: &mut Criterion) {
                 cmd: Some(cmd),
                 log_level: None,
                 interactive: None,
+                agent_mode: None,
             };
             run_app(args, rt).unwrap();
             black_box(())
