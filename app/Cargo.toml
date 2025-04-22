@@ -8,6 +8,7 @@ configs = { path = "../configs" }
 vectordb = { path = "../vectordb" }
 embedder = { path = "../embedder" }
 chat = { path = "../chat" }
+agent = { path = "../agent" }
 clap.workspace = true
 log.workspace = true
 anyhow.workspace = true

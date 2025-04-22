@@ -245,12 +245,13 @@ pub fn run_app(args: Args, rt: Runtime) -> Result<()> {
         }
     }
 
-    match args.agent_mode {
-        Some(true) => {
-            info!("Running in agent mode");
-        }
-        _ => {}
-    }
+    // Run the command
+    // @TODO fix this
+    // if let Some(true) = args.agent_mode {
+    //     info!("Running in agent mode");
+    //     agent::agent_interactive::interactive_cli(rt)
+    //         .context("Failed to run agent interactive CLI")?;
+    // }
 
     Ok(())
 }
