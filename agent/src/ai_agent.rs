@@ -2,6 +2,12 @@ use anyhow::{Context, Result};
 use log::debug;
 use vectordb::EmbeddingStore;
 
+// @TODO implement this trait
+#[allow(dead_code)]
+pub trait AgentTrait {
+    fn execute(&self, args: &dyn std::any::Any) -> Result<Vec<String>>;
+}
+
 #[derive(Clone, Debug)]
 pub struct ModelAPIProvider {
     pub provider: String, // TODO use LLMProvider enum
