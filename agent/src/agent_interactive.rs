@@ -1,4 +1,4 @@
-use crate::ai_agent::{AiProvider, EmbedAgent, EmbeddingProvider, ModelAPIProvider, RagAgent};
+use crate::ai_agent::{EmbedAgent, EmbeddingProvider, LLMAgent, ModelAPIProvider, RagAgent};
 use anyhow::{anyhow, Context, Ok, Result};
 use chat::chat_config::LLMProvider;
 use configs::constants::{
@@ -23,19 +23,18 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
         .items(&commands)
         .interact_on(&Term::stdout())?;
 
-    let https_client = configs::get_https_client().context("Failed to initialize https client")?;
-
     match commands[command_index] {
         "Load" => {
+            let https_client =
+                configs::get_https_client().context("Failed to initialize https client")?;
             let llm_provider = fetch_llm_config(&theme)?;
-            let embedding_model = EmbeddingProvider {
-                model: Input::with_theme(&theme)
-                    .with_prompt("Embedding model")
-                    .default(EMBEDDING_MODEL.to_string())
-                    .interact_text()?,
-            };
+            let model = Input::with_theme(&theme)
+                .with_prompt("Embedding model")
+                .default(EMBEDDING_MODEL.to_string())
+                .interact_text()?;
 
-            let agent = EmbedAgent::new(https_client, llm_provider, embedding_model);
+            let embedding_provider = EmbeddingProvider::new(llm_provider, model);
+            let agent = EmbedAgent::new(https_client, embedding_provider);
 
             let path: String = Input::with_theme(&theme)
                 .with_prompt("Enter file path")
@@ -51,13 +50,15 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
         }
 
         "LanceQuery" => {
+            let https_client =
+                configs::get_https_client().context("Failed to initialize https client")?;
             let llm_provider = fetch_llm_config(&theme)?;
-            let embedding_model = EmbeddingProvider {
-                model: Input::with_theme(&theme)
-                    .with_prompt("Embedding model")
-                    .default(EMBEDDING_MODEL.to_string())
-                    .interact_text()?,
-            };
+            let model = Input::with_theme(&theme)
+                .with_prompt("Embedding model")
+                .default(EMBEDDING_MODEL.to_string())
+                .interact_text()?;
+
+            let embedding_provider = EmbeddingProvider::new(llm_provider, model);
 
             let table = Input::with_theme(&theme)
                 .with_prompt("Table name")
@@ -68,8 +69,8 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
                 .default("rag_db".to_string())
                 .interact_text()?;
 
-            let agent = EmbedAgent::new(https_client, llm_provider, embedding_model);
-            let embedding_store = vectordb::EmbeddingStore::new(&table, &database);
+            let agent = EmbedAgent::new(https_client, embedding_provider);
+            let embedding_store = vectordb::EmbeddingStore::new(&database, &table);
 
             let content = rt.block_on(
                 agent.query_embeddings(
@@ -94,21 +95,25 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
         }
 
         "RagQuery" => {
-            let llm_provider = fetch_llm_config(&theme)?;
-            let embedding_model = EmbeddingProvider {
-                model: Input::with_theme(&theme)
-                    .with_prompt("Embedding model")
-                    .default(EMBEDDING_MODEL.to_string())
-                    .interact_text()?,
-            };
-            let ai_model = AiProvider {
-                model: Input::with_theme(&theme)
-                    .with_prompt("AI Model")
-                    .default(AI_MODEL.to_string())
-                    .interact_text()?,
-            };
+            let https_client =
+                configs::get_https_client().context("Failed to initialize https client")?;
 
-            let agent = RagAgent::new(https_client, llm_provider, embedding_model, ai_model);
+            let llm_provider = fetch_llm_config(&theme)?;
+            let embeding_model = Input::with_theme(&theme)
+                .with_prompt("Embedding model")
+                .default(EMBEDDING_MODEL.to_string())
+                .interact_text()?;
+
+            let embedding_provider = EmbeddingProvider::new(llm_provider.clone(), embeding_model);
+            let embed_agent = EmbedAgent::new(https_client.clone(), embedding_provider);
+
+            let ai_model = Input::with_theme(&theme)
+                .with_prompt("AI Model")
+                .default(AI_MODEL.to_string())
+                .interact_text()?;
+
+            let ai_model = LLMAgent::new(https_client.clone(), llm_provider.clone(), ai_model);
+            let agent = RagAgent::new(https_client, embed_agent, ai_model);
 
             let path: String = Input::with_theme(&theme)
                 .with_prompt("Enter file path")
@@ -148,19 +153,20 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
         }
 
         "Generate" => {
+            let https_client =
+                configs::get_https_client().context("Failed to initialize https client")?;
             let llm_provider = fetch_llm_config(&theme)?;
-            let embedding_model = EmbeddingProvider {
-                model: String::new(),
-            };
-            let ai_model = AiProvider {
+
+            let ai_agent = LLMAgent {
+                https_client,
+                llm_provider,
                 model: Input::with_theme(&theme)
                     .with_prompt("AI Model")
                     .default(AI_MODEL.to_string())
                     .interact_text()?,
             };
 
-            let agent = RagAgent::new(https_client, llm_provider, embedding_model, ai_model);
-            agent.generate(
+            ai_agent.generate(
                 rt,
                 &Input::<String>::with_theme(&theme)
                     .with_prompt("Enter your prompt")

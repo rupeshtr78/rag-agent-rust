@@ -226,32 +226,32 @@ pub fn run_app(args: Args, rt: Runtime) -> Result<()> {
     colog_init(log_level);
 
     // Run the command
-    match args.interactive {
-        Some(true) => {
-            info!("Running in interactive mode");
-            let commands =
-                cli_interactive::interactive_cli().context("Failed to run interactive CLI")?;
-            cli::cli(commands, rt).context("Failed to run interactive Command")?;
-        }
-        _ => {
-            info!("Running in non-interactive mode");
-            let commands = args.cmd.unwrap_or_else(|| {
-                info!("No subcommand provided. Use --help for more information.");
-                Commands::Version {
-                    version: VERSION.to_string(),
-                }
-            });
-            cli::cli(commands, rt).context("Failed to run inline Command")?;
-        }
-    }
+    // match args.interactive {
+    //     Some(true) => {
+    //         info!("Running in interactive mode");
+    //         let commands =
+    //             cli_interactive::interactive_cli().context("Failed to run interactive CLI")?;
+    //         cli::cli(commands, rt).context("Failed to run interactive Command")?;
+    //     }
+    //     _ => {
+    //         info!("Running in non-interactive mode");
+    //         let commands = args.cmd.unwrap_or_else(|| {
+    //             info!("No subcommand provided. Use --help for more information.");
+    //             Commands::Version {
+    //                 version: VERSION.to_string(),
+    //             }
+    //         });
+    //         cli::cli(commands, rt).context("Failed to run inline Command")?;
+    //     }
+    // }
 
     // Run the command
     // @TODO fix this
-    // if let Some(true) = args.agent_mode {
-    //     info!("Running in agent mode");
-    //     agent::agent_interactive::interactive_cli(rt)
-    //         .context("Failed to run agent interactive CLI")?;
-    // }
+    if let Some(true) = args.agent_mode {
+        info!("Running in agent mode");
+        agent::agent_interactive::interactive_cli(rt)
+            .context("Failed to run agent interactive CLI")?;
+    }
 
     Ok(())
 }

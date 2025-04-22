@@ -2,6 +2,7 @@ use anyhow::{Context, Result};
 use log::debug;
 use vectordb::EmbeddingStore;
 
+#[derive(Clone, Debug)]
 pub struct ModelAPIProvider {
     pub provider: String, // TODO use LLMProvider enum
     pub api_url: String,
@@ -17,19 +18,28 @@ pub struct EmbeddingProvider {
     pub model: String,
 }
 
-pub struct AiProvider {
+impl EmbeddingProvider {
+    pub fn new(llm_provider: ModelAPIProvider, model: String) -> Self {
+        EmbeddingProvider {
+            llm_provider,
+            model,
+        }
+    }
+}
+
+pub struct LLMAgent {
     pub https_client: configs::HttpsClient,
     pub llm_provider: ModelAPIProvider,
     pub model: String,
 }
 
-impl AiProvider {
+impl LLMAgent {
     pub fn new(
         https_client: configs::HttpsClient,
         llm_provider: ModelAPIProvider,
         model: String,
     ) -> Self {
-        AiProvider {
+        LLMAgent {
             https_client,
             llm_provider,
             model,
@@ -126,7 +136,7 @@ impl EmbedAgent {
 pub struct RagAgent {
     pub https_client: configs::HttpsClient,
     pub embed_agent: EmbedAgent,
-    pub ai_model: AiProvider,
+    pub ai_model: LLMAgent,
     // pub agent: Option<FnMut(&str> -> Result<Vec<String>>>,
 }
 
@@ -134,7 +144,7 @@ impl RagAgent {
     pub fn new(
         https_client: configs::HttpsClient,
         embed_agent: EmbedAgent,
-        ai_model: AiProvider,
+        ai_model: LLMAgent,
     ) -> Self {
         RagAgent {
             https_client,
