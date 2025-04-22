@@ -21,6 +21,7 @@ pub struct AIModel {
 }
 
 pub struct Agent {
+    pub https_client: configs::HttpsClient,
     pub llm_provider: ModelAPIProvider,
     pub embedding_model: EmbeddingModel,
     pub ai_model: AIModel,
@@ -29,11 +30,13 @@ pub struct Agent {
 
 impl Agent {
     pub fn new(
+        https_client: configs::HttpsClient,
         llm_provider: ModelAPIProvider,
         embedding_model: EmbeddingModel,
         ai_model: AIModel,
     ) -> Self {
         Agent {
+            https_client,
             llm_provider,
             embedding_model,
             ai_model,
@@ -41,9 +44,6 @@ impl Agent {
     }
 
     pub async fn load_embeddings(&self, path: &str, chunk_size: usize) -> Result<EmbeddingStore> {
-        // Load the embedding
-        let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
-
         let embedding_store = vectordb::run_embedding_pipeline(
             path,
             chunk_size,
@@ -51,7 +51,7 @@ impl Agent {
             &self.llm_provider.api_url,
             &self.llm_provider.api_key,
             self.embedding_model.model.as_str(),
-            &https_client,
+            &self.https_client,
         )
         .await
         .context("Failed to run lance vectordb")?;
@@ -67,11 +67,6 @@ impl Agent {
         file_context: bool,
         embedding_store: &EmbeddingStore,
     ) -> Result<Vec<String>> {
-        // Query the Lance Vector Database
-        let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
-
-        // let db = embedding_store.db;
-        // let table = embedding_store.table;
         // Initialize the database
         let mut db = lancedb::connect(&embedding_store.db)
             .execute()
@@ -87,7 +82,7 @@ impl Agent {
             self.embedding_model.model.as_str(),
             &input,
             &embedding_store.table,
-            &https_client,
+            &self.https_client,
             whole_query,
             file_context,
         )
@@ -109,9 +104,6 @@ impl Agent {
         system_prompt: &str,
         continue_chat: bool,
     ) -> Result<()> {
-        // Query the Lance Vector Database
-        let https_client = configs::get_https_client().context("Failed to create HTTPS client")?;
-
         // Load the embedding
         let embedding_store = rt
             .block_on(self.load_embeddings(path, chunk_size))
@@ -134,7 +126,7 @@ impl Agent {
             system_prompt,
             input.first().unwrap(),
             Some(&context),
-            &https_client,
+            &self.https_client,
             self.llm_provider.provider.as_str(),
             &self.llm_provider.api_url,
             &self.llm_provider.api_key,
@@ -154,13 +146,11 @@ impl Agent {
         system_prompt: &str,
     ) -> Result<()> {
         let context: Option<&str> = None;
-        let client = configs::get_https_client().context("Failed to create HTTPS client")?;
-
         rt.block_on(chat::run_chat(
             system_prompt,
             prompt,
             context,
-            &client,
+            &self.https_client,
             self.llm_provider.provider.as_str(),
             &self.llm_provider.api_url,
             &self.llm_provider.api_key,

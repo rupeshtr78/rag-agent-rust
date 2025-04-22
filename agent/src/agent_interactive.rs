@@ -1,5 +1,5 @@
 use crate::ai_agent::{AIModel, Agent, EmbeddingModel, ModelAPIProvider};
-use anyhow::{anyhow, Ok, Result};
+use anyhow::{anyhow, Context, Ok, Result};
 use chat::chat_config::LLMProvider;
 use configs::constants::{
     AI_MODEL, CHAT_API_KEY, CHAT_API_URL, EMBEDDING_MODEL, OPEN_AI_URL, SYSTEM_PROMPT_PATH,
@@ -23,6 +23,8 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
         .items(&commands)
         .interact_on(&Term::stdout())?;
 
+    let https_client = configs::get_https_client().context("Failed to initialize https client")?;
+
     match commands[command_index] {
         "Load" => {
             let llm_provider = fetch_llm_config(&theme)?;
@@ -36,7 +38,8 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
                 model: String::new(),
             };
 
-            let agent = Agent::new(llm_provider, embedding_model, ai_model);
+            let agent = Agent::new(https_client, llm_provider, embedding_model, ai_model);
+
             let path: String = Input::with_theme(&theme)
                 .with_prompt("Enter file path")
                 .interact_text()?;
@@ -71,7 +74,7 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
                 .default("rag_db".to_string())
                 .interact_text()?;
 
-            let agent = Agent::new(llm_provider, embedding_model, ai_model);
+            let agent = Agent::new(https_client, llm_provider, embedding_model, ai_model);
             let embedding_store = vectordb::EmbeddingStore::new(&table, &database);
 
             let content = rt.block_on(
@@ -111,7 +114,7 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
                     .interact_text()?,
             };
 
-            let agent = Agent::new(llm_provider, embedding_model, ai_model);
+            let agent = Agent::new(https_client, llm_provider, embedding_model, ai_model);
 
             let path: String = Input::with_theme(&theme)
                 .with_prompt("Enter file path")
@@ -162,7 +165,7 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
                     .interact_text()?,
             };
 
-            let agent = Agent::new(llm_provider, embedding_model, ai_model);
+            let agent = Agent::new(https_client, llm_provider, embedding_model, ai_model);
             agent.generate(
                 rt,
                 &Input::<String>::with_theme(&theme)
