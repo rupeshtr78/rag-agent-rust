@@ -1,4 +1,4 @@
-use crate::ai_agent::{AIModel, Agent, EmbeddingModel, ModelAPIProvider};
+use crate::ai_agent::{AiProvider, EmbedAgent, EmbeddingProvider, ModelAPIProvider, RagAgent};
 use anyhow::{anyhow, Context, Ok, Result};
 use chat::chat_config::LLMProvider;
 use configs::constants::{
@@ -28,17 +28,14 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
     match commands[command_index] {
         "Load" => {
             let llm_provider = fetch_llm_config(&theme)?;
-            let embedding_model = EmbeddingModel {
+            let embedding_model = EmbeddingProvider {
                 model: Input::with_theme(&theme)
                     .with_prompt("Embedding model")
                     .default(EMBEDDING_MODEL.to_string())
                     .interact_text()?,
             };
-            let ai_model = AIModel {
-                model: String::new(),
-            };
 
-            let agent = Agent::new(https_client, llm_provider, embedding_model, ai_model);
+            let agent = EmbedAgent::new(https_client, llm_provider, embedding_model);
 
             let path: String = Input::with_theme(&theme)
                 .with_prompt("Enter file path")
@@ -55,14 +52,11 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
 
         "LanceQuery" => {
             let llm_provider = fetch_llm_config(&theme)?;
-            let embedding_model = EmbeddingModel {
+            let embedding_model = EmbeddingProvider {
                 model: Input::with_theme(&theme)
                     .with_prompt("Embedding model")
                     .default(EMBEDDING_MODEL.to_string())
                     .interact_text()?,
-            };
-            let ai_model = AIModel {
-                model: String::new(),
             };
 
             let table = Input::with_theme(&theme)
@@ -74,7 +68,7 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
                 .default("rag_db".to_string())
                 .interact_text()?;
 
-            let agent = Agent::new(https_client, llm_provider, embedding_model, ai_model);
+            let agent = EmbedAgent::new(https_client, llm_provider, embedding_model);
             let embedding_store = vectordb::EmbeddingStore::new(&table, &database);
 
             let content = rt.block_on(
@@ -101,20 +95,20 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
 
         "RagQuery" => {
             let llm_provider = fetch_llm_config(&theme)?;
-            let embedding_model = EmbeddingModel {
+            let embedding_model = EmbeddingProvider {
                 model: Input::with_theme(&theme)
                     .with_prompt("Embedding model")
                     .default(EMBEDDING_MODEL.to_string())
                     .interact_text()?,
             };
-            let ai_model = AIModel {
+            let ai_model = AiProvider {
                 model: Input::with_theme(&theme)
                     .with_prompt("AI Model")
                     .default(AI_MODEL.to_string())
                     .interact_text()?,
             };
 
-            let agent = Agent::new(https_client, llm_provider, embedding_model, ai_model);
+            let agent = RagAgent::new(https_client, llm_provider, embedding_model, ai_model);
 
             let path: String = Input::with_theme(&theme)
                 .with_prompt("Enter file path")
@@ -155,17 +149,17 @@ pub fn interactive_cli(rt: tokio::runtime::Runtime) -> Result<()> {
 
         "Generate" => {
             let llm_provider = fetch_llm_config(&theme)?;
-            let embedding_model = EmbeddingModel {
+            let embedding_model = EmbeddingProvider {
                 model: String::new(),
             };
-            let ai_model = AIModel {
+            let ai_model = AiProvider {
                 model: Input::with_theme(&theme)
                     .with_prompt("AI Model")
                     .default(AI_MODEL.to_string())
                     .interact_text()?,
             };
 
-            let agent = Agent::new(https_client, llm_provider, embedding_model, ai_model);
+            let agent = RagAgent::new(https_client, llm_provider, embedding_model, ai_model);
             agent.generate(
                 rt,
                 &Input::<String>::with_theme(&theme)
