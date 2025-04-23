@@ -1,5 +1,13 @@
 [workspace]
-members = [ "agent","app", "chat", "configs", "embedder", "vectordb"]
+members = [
+    "agent",
+    "app",
+    "chat",
+    "configs",
+    "embedder",
+    "graph_db",
+    "vectordb",
+]
 
 resolver = "2"
 
@@ -11,6 +19,7 @@ serde_json = "1.0.133"
 tokio = { version = "1", features = ["full"] }
 hyper = { version = "0.14", features = ["full"] }
 clap = { version = "4.5.13", features = ["derive"] }
+tree-sitter = "0.24.0"
 tree-sitter-rust = "0.23.2"
 tree-sitter-java = "0.23.5"
 tree-sitter-go = "0.23.4"
@@ -45,3 +54,7 @@ http = "1.2.0"
 mockito = "1.7.0"
 tempdir = "0.3.7"
 dialoguer = "0.11.0"
+indradb-lib = { version = "*", features = ["rocksdb-datastore"] }
+indradb-proto = "4.0.0"
+uuid = "1.16.0"
+regex = "1.11.1"
