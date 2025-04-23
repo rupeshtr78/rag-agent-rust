@@ -1,0 +1,17 @@
+[package]
+name = "graph_db"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+indradb-lib.workspace = true
+indradb-proto.workspace = true
+anyhow.workspace = true
+tree-sitter.workspace = true
+tree-sitter-python.workspace = true
+tree-sitter-rust.workspace = true
+tree-sitter-java.workspace = true
+tree-sitter-go.workspace = true
+uuid.workspace = true
+regex.workspace = true
+petgraph.workspace = true
