@@ -1,6 +1,7 @@
 use crate::ai_agent::{EmbedAgent, EmbeddingProvider, LLMAgent, ModelAPIProvider, RagAgent};
 use anyhow::{anyhow, Context, Ok, Result};
 use chat::chat_config::LLMProvider;
+use clap::Command;
 use configs::constants::{
     AI_MODEL, CHAT_API_KEY, CHAT_API_URL, EMBEDDING_MODEL, OPEN_AI_URL, SYSTEM_PROMPT_PATH,
 };
@@ -60,13 +61,13 @@ pub fn interactive_cli(rt: &tokio::runtime::Runtime) -> Result<()> {
 
             let embedding_provider = EmbeddingProvider::new(llm_provider, model);
 
-            let table = Input::with_theme(&theme)
-                .with_prompt("Table name")
-                .default("rag_table".to_string())
-                .interact_text()?;
             let database = Input::with_theme(&theme)
                 .with_prompt("Database URI")
                 .default("rag_db".to_string())
+                .interact_text()?;
+            let table = Input::with_theme(&theme)
+                .with_prompt("Table name")
+                .default("rag_table".to_string())
                 .interact_text()?;
 
             let agent = EmbedAgent::new(https_client, embedding_provider);

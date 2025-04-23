@@ -15,6 +15,7 @@ use crate::{cli, cli_interactive};
 pub struct Args {
     #[clap(subcommand)]
     pub cmd: Option<Commands>,
+    /// Select Log level
     #[clap(short, long, global = true)]
     pub log_level: Option<LogLevel>,
     /// Select Cli is to be used
@@ -225,34 +226,14 @@ pub fn run_app(args: Args, rt: Runtime) -> Result<()> {
     let log_level = args.log_level.unwrap_or(LogLevel::Info);
     colog_init(log_level);
 
-    // Run the command
-    // match args.interactive {
-    //     Some(true) => {
-    //         info!("Running in interactive mode");
-    //         let commands =
-    //             cli_interactive::interactive_cli().context("Failed to run interactive CLI")?;
-    //         cli::cli(commands, rt).context("Failed to run interactive Command")?;
-    //     }
-    //     _ => {
-    //         info!("Running in non-interactive mode");
-    //         let commands = args.cmd.unwrap_or_else(|| {
-    //             info!("No subcommand provided. Use --help for more information.");
-    //             Commands::Version {
-    //                 version: VERSION.to_string(),
-    //             }
-    //         });
-    //         cli::cli(commands, rt).context("Failed to run inline Command")?;
-    //     }
-    // }
-
-    // Run the command
-    // @TODO fix this
+    // Run the command in agent mode
     if let Some(true) = args.agent_mode {
         info!("Running in agent mode");
         agent::agent_interactive::interactive_cli(&rt)
             .context("Failed to run agent interactive CLI")?;
     }
 
+    // Run the command interactive for testing
     if let Some(true) = args.interactive {
         let commands =
             cli_interactive::interactive_cli().context("Failed to run interactive CLI")?;
