@@ -186,7 +186,12 @@ pub fn interactive_cli(rt: &tokio::runtime::Runtime) -> Result<()> {
         }
 
         "Help" => {
-            println!("Help command is not implemented yet");
+            println!("Available commands:");
+            println!("  load         - Load a directory of files into the lance vector database");
+            println!("  lance-query  - Query the Lance Vector Database");
+            println!("  rag-query    - Query the Lance Vector Database and chat with the AI");
+            println!("  generate     - Chat with the AI");
+            println!("Use 'Help' to see this message again.");
         }
 
         _ => return Err(anyhow!("Selected invalid command")),
