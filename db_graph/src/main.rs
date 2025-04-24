@@ -8,6 +8,8 @@ use std::{fs, path::Path};
 use tree_sitter::Language;
 use tree_sitter::{Node, Parser, Tree};
 
+// mod ast;
+
 fn main() -> Result<()> {
     // indra_poc().context("Error runnning indra poc")?;
 
@@ -41,8 +43,14 @@ fn parse_file_to_indradb(
     let root_node = tree.root_node();
     println!("Root node kind: {}", root_node.kind());
 
-    // Start recursively inserting nodes into IndraDB graph
-    insert_node_recursive(db, &root_node, None).context("Failed to insert nodes into IndraDB")?;
+    // // Start recursively inserting nodes into IndraDB graph
+    // insert_node_recursive(db, &root_node, None).context("Failed to insert nodes into IndraDB")?;
+
+    // Generate the petgraph from the AST
+    let pet_graph = ast_to_graph(&root_node);
+
+    // Insert the petgraph into IndraDB
+    insert_petgraph_to_indradb(db, &pet_graph).context("Failed to insert petgraph into IndraDB")?;
 
     // Query
     let q1 = indradb::AllVertexQuery;

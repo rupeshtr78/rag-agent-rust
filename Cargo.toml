@@ -5,7 +5,7 @@ members = [
     "chat",
     "configs",
     "embedder",
-    "graph_db",
+    "db_graph",
     "vectordb",
 ]
 
