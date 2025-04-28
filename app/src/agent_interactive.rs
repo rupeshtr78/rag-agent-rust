@@ -9,6 +9,7 @@ use dialoguer::{console::Term, theme::ColorfulTheme, Confirm, Input, Select};
 
 pub fn interactive_cli(rt: &tokio::runtime::Runtime) -> Result<()> {
     let theme = ColorfulTheme::default();
+    // @TODO refactor this to cli::Commands enum have to move this file to cli lib.
     let commands = vec![
         "Load",
         "LanceQuery",
