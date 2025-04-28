@@ -229,7 +229,7 @@ pub fn run_app(args: Args, rt: Runtime) -> Result<()> {
     // Run the command in agent mode
     if let Some(true) = args.agent_mode {
         info!("Running in agent mode");
-        agent::agent_interactive::interactive_cli(&rt)
+        crate::agent_interactive::interactive_cli(&rt)
             .context("Failed to run agent interactive CLI")?;
     }
 

@@ -12,3 +12,4 @@ hyper-rustls.workspace = true
 anyhow.workspace = true
 rustls.workspace = true
 log.workspace = true
+serde.workspace = true

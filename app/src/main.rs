@@ -16,6 +16,8 @@ fn main() -> Result<()> {
 
     commands::run_app(args, rt).context("Failed to run Command")?;
 
+    // app::ui::launch_app();
+
     println!("Exiting application");
 
     Ok(())

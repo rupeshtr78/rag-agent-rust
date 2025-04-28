@@ -7,6 +7,9 @@ use hyper::body::Bytes;
 use rustls::crypto::ring::default_provider;
 use hyper_util::rt::TokioExecutor;
 use log::debug;
+use serde::{Deserialize, Serialize};
+use anyhow::anyhow;
+use crate::constants::{CHAT_API_URL, OPEN_AI_URL};
 
 pub type HttpsClient = LegacyClient<HttpsConnector<HttpConnector>, Full<Bytes>>;
 
@@ -33,3 +36,41 @@ pub fn get_https_client() -> anyhow::Result<HttpsClient> {
     let client: HttpsClient = LegacyClient::builder(TokioExecutor::new()).build(https);
     anyhow::Ok(client)
 }
+
+/// LLMProvider is an enum that represents the provider of the LLM
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub enum LLMProvider {
+    OpenAI,
+    Ollama,
+    // Add other providers
+}
+
+impl LLMProvider {
+    pub fn get_provider(provider: &str) -> anyhow::Result<LLMProvider> {
+        match provider.to_lowercase().as_str() {
+            "ollama" => Ok(LLMProvider::Ollama),
+            "openai" => Ok(LLMProvider::OpenAI),
+            _ => Err(anyhow!("Unsupported provider: {}", provider)),
+        }
+    }
+
+    // @TODO merge this with get_chat_api_url
+    #[allow(dead_code)]
+    pub fn get_api_url(provider: &str) -> anyhow::Result<String> {
+        let provider =
+            LLMProvider::get_provider(provider).map_err(|_| anyhow!("Unsupported provider"))?;
+        match provider {
+            LLMProvider::OpenAI => anyhow::Ok(OPEN_AI_URL.to_string()),
+            LLMProvider::Ollama => anyhow::Ok(CHAT_API_URL.to_string()),
+        }
+    }
+}
+
+// pub fn get_chat_api_url(provider: &str) -> anyhow::Result<String> {
+//     let provider =
+//         LLMProvider::get_provider(provider).map_err(|_| anyhow!("Unsupported provider"))?;
+//     match provider {
+//         LLMProvider::OpenAI => anyhow::Ok(OPEN_AI_URL.to_string()),
+//         LLMProvider::Ollama => anyhow::Ok(CHAT_API_URL.to_string()),
+//     }
+// }

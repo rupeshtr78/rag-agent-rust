@@ -119,7 +119,7 @@ pub async fn run_embedding_pipeline(
             let embed_response = fetch_embedding(&embed_request, &https_client)
                 .await
                 .context("Failed to fetch embeddings")?;
-            info!("Embedding Response: {:?}", embed_response.embeddings.len());
+            debug!("Embedding Response: {:?}", embed_response.embeddings.len());
 
             // Create record batch
             let record_batch = load_lancedb::create_record_batch(
@@ -136,7 +136,7 @@ pub async fn run_embedding_pipeline(
                 .await
                 .context("Failed to insert embeddings")?;
 
-            info!("Embeddings inserted successfully");
+            // debug!("Embeddings inserted successfully");
             Ok::<(), anyhow::Error>(())
         });
 

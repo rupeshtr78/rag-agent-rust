@@ -24,6 +24,7 @@ http.workspace = true
 mockito.workspace = true
 tempdir.workspace = true
 dialoguer.workspace = true
+dioxus.workspace = true
 criterion = "0.5.1"
 
 

@@ -1,5 +1,5 @@
 [workspace]
-members = [ "agent","app", "chat", "configs", "embedder", "vectordb"]
+members = ["agent", "app", "chat", "configs", "embedder", "vectordb"]
 
 resolver = "2"
 
@@ -45,3 +45,4 @@ http = "1.2.0"
 mockito = "1.7.0"
 tempdir = "0.3.7"
 dialoguer = "0.11.0"
+dioxus = { version = "0.6.3", features = ["desktop"] }

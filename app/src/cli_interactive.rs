@@ -1,6 +1,6 @@
 use crate::commands::Commands;
 use anyhow::{anyhow, Context, Result};
-use chat::chat_config::LLMProvider;
+use configs::LLMProvider;
 use configs::constants::{
     AI_MODEL, CHAT_API_KEY, CHAT_API_URL, EMBEDDING_MODEL, OPEN_AI_URL, SYSTEM_PROMPT_PATH,
 };
