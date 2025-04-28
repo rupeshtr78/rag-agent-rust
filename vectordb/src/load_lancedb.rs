@@ -122,7 +122,7 @@ pub async fn create_lance_table(db: &mut Connection, table_schema: &TableSchema)
         .await
         .context("Failed to create a table")?;
 
-    log::info!("Table created successfully");
+    log::debug!("Table created successfully");
 
     Ok(())
 }
@@ -334,7 +334,7 @@ pub async fn create_index_on_embedding(
             )
         })?;
 
-    log::info!(
+    log::debug!(
         "Created inverted index on table: {:?} column: {:?}",
         table_name,
         column
@@ -374,7 +374,7 @@ pub async fn create_inverted_index(
             )
         })?;
 
-    log::info!(
+    log::debug!(
         "Created inverted index on table: {:?} column: {:?}",
         table_name,
         columns

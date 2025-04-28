@@ -15,7 +15,6 @@ use load_lancedb::TableSchema;
 // use hyper::client::HttpConnector;
 // use hyper::Client;
 use ::log::debug;
-use ::log::info;
 use ::std::path::PathBuf;
 pub type HttpsClient = LegacyClient<HttpsConnector<HttpConnector>, Full<Bytes>>;
 

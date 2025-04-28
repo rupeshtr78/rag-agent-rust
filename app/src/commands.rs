@@ -212,6 +212,7 @@ impl LogLevel {
 fn colog_init(log_level: LogLevel) {
     // Initialize env_logger with module path formatting
     let mut builder = env_logger::Builder::new();
+    builder.filter_module("lance", log::LevelFilter::Off);
     builder
         .filter_level(log_level.get_log_level_filter())
         .format_module_path(true)
