@@ -1,9 +1,8 @@
-use crate::ai_agent::{EmbedAgent, EmbeddingProvider, LLMAgent, ModelAPIProvider, RagAgent};
+use agent::ai_agent::{EmbedAgent, EmbeddingProvider, LLMAgent, ModelAPIProvider, RagAgent};
 use anyhow::{anyhow, Context, Ok, Result};
 use chat::chat_config::LLMProvider;
-use clap::Command;
 use configs::constants::{
-    AI_MODEL, CHAT_API_KEY, CHAT_API_URL, EMBEDDING_MODEL, OPEN_AI_URL, SYSTEM_PROMPT_PATH,
+    AI_MODEL, CHAT_API_KEY, EMBEDDING_MODEL, SYSTEM_PROMPT_PATH,
 };
 use dialoguer::{console::Term, theme::ColorfulTheme, Confirm, Input, Select};
 
@@ -29,7 +28,7 @@ pub fn interactive_cli(rt: &tokio::runtime::Runtime) -> Result<()> {
         "Load" => {
             let https_client =
                 configs::get_https_client().context("Failed to initialize https client")?;
-            let llm_provider = fetch_llm_config(&theme)?;
+            let llm_provider = fetch_llm_config(&theme, "Embed Provider:")?;
             let model = Input::with_theme(&theme)
                 .with_prompt("Embedding model")
                 .default(EMBEDDING_MODEL.to_string())
@@ -54,7 +53,7 @@ pub fn interactive_cli(rt: &tokio::runtime::Runtime) -> Result<()> {
         "LanceQuery" => {
             let https_client =
                 configs::get_https_client().context("Failed to initialize https client")?;
-            let llm_provider = fetch_llm_config(&theme)?;
+            let llm_provider = fetch_llm_config(&theme, "Embed Provider:")?;
             let model = Input::with_theme(&theme)
                 .with_prompt("Embedding model")
                 .default(EMBEDDING_MODEL.to_string())
@@ -100,21 +99,22 @@ pub fn interactive_cli(rt: &tokio::runtime::Runtime) -> Result<()> {
             let https_client =
                 configs::get_https_client().context("Failed to initialize https client")?;
 
-            let llm_provider = fetch_llm_config(&theme)?;
+            let embed_provider = fetch_llm_config(&theme, "Embed provider:")?;
             let embeding_model = Input::with_theme(&theme)
                 .with_prompt("Embedding model")
                 .default(EMBEDDING_MODEL.to_string())
                 .interact_text()?;
 
-            let embedding_provider = EmbeddingProvider::new(llm_provider.clone(), embeding_model);
+            let embedding_provider = EmbeddingProvider::new(embed_provider, embeding_model);
             let embed_agent = EmbedAgent::new(https_client.clone(), embedding_provider);
 
+            let llm_provider = fetch_llm_config(&theme, "LLM Provider:")?;
             let ai_model = Input::with_theme(&theme)
                 .with_prompt("AI Model")
                 .default(AI_MODEL.to_string())
                 .interact_text()?;
 
-            let ai_model = LLMAgent::new(https_client.clone(), llm_provider.clone(), ai_model);
+            let ai_model = LLMAgent::new(https_client.clone(), llm_provider, ai_model);
             let agent = RagAgent::new(https_client, embed_agent, ai_model);
 
             let path: String = Input::with_theme(&theme)
@@ -157,7 +157,7 @@ pub fn interactive_cli(rt: &tokio::runtime::Runtime) -> Result<()> {
         "Generate" => {
             let https_client =
                 configs::get_https_client().context("Failed to initialize https client")?;
-            let llm_provider = fetch_llm_config(&theme)?;
+            let llm_provider = fetch_llm_config(&theme, "LLM Provider:")?;
 
             let ai_agent = LLMAgent {
                 https_client,
@@ -201,9 +201,9 @@ pub fn interactive_cli(rt: &tokio::runtime::Runtime) -> Result<()> {
     Ok(())
 }
 
-fn fetch_llm_config(theme: &ColorfulTheme) -> Result<ModelAPIProvider> {
+fn fetch_llm_config(theme: &ColorfulTheme, prompt: &str) -> Result<ModelAPIProvider> {
     let provider = Input::with_theme(theme)
-        .with_prompt("LLM provider")
+        .with_prompt(prompt)
         .validate_with(|input: &String| -> core::result::Result<(), &str> {
             match LLMProvider::get_provider(&input.to_lowercase()) {
                 std::result::Result::Ok(_) => core::result::Result::Ok(()),
@@ -215,8 +215,10 @@ fn fetch_llm_config(theme: &ColorfulTheme) -> Result<ModelAPIProvider> {
 
     let api_url = Input::with_theme(theme)
         .with_prompt("Chat API Url")
-        .default(get_chat_api_url(&provider)?.to_string())
+        // .default(configs::get_chat_api_url(&provider)?.to_string())
+        .default(configs::LLMProvider::get_api_url(&provider)?.to_string())
         .interact_text()?;
+
     let api_key = Input::with_theme(theme)
         .with_prompt("API Key")
         .default(CHAT_API_KEY.to_string())
@@ -231,11 +233,3 @@ fn fetch_llm_config(theme: &ColorfulTheme) -> Result<ModelAPIProvider> {
     Ok(llm_provider)
 }
 
-fn get_chat_api_url(provider: &str) -> Result<String> {
-    let provider =
-        LLMProvider::get_provider(provider).map_err(|_| anyhow!("Unsupported provider"))?;
-    match provider {
-        LLMProvider::OpenAI => Ok(OPEN_AI_URL.to_string()),
-        LLMProvider::Ollama => Ok(CHAT_API_URL.to_string()),
-    }
-}

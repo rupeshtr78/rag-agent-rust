@@ -1,12 +1,13 @@
 use crate::model_options::Options;
 use crate::prompt_template::Prompt;
 use anyhow::Result;
-use anyhow::{anyhow, Context};
+use anyhow::{Context};
 use configs::constants::{self, OPEN_AI_CHAT_API, OPEN_AI_URL};
 use log::debug;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt;
+pub use configs::LLMProvider;
 
 /// ChatRole is an enum that represents the role of the chat message
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -55,23 +56,6 @@ impl ChatMessage {
             }
         } else {
             eprintln!("Failed to parse JSON string.");
-        }
-    }
-}
-/// LLMProvider is an enum that represents the provider of the LLM
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
-pub enum LLMProvider {
-    OpenAI,
-    Ollama,
-    // Add other providers
-}
-
-impl LLMProvider {
-    pub fn get_provider(provider: &str) -> Result<LLMProvider> {
-        match provider.to_lowercase().as_str() {
-            "ollama" => Ok(LLMProvider::Ollama),
-            "openai" => Ok(LLMProvider::OpenAI),
-            _ => Err(anyhow!("Unsupported provider: {}", provider)),
         }
     }
 }

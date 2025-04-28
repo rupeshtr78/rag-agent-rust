@@ -192,7 +192,7 @@ pub async fn insert_embeddings(
         return Err(anyhow::Error::msg("Failed to insert records"));
     }
 
-    log::info!("Records inserted successfully");
+    log::debug!("Records inserted successfully");
 
     Ok(())
 }

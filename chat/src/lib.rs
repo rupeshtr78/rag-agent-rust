@@ -8,7 +8,7 @@ use bytes::Bytes;
 use chat_config::ChatMessage;
 use chat_config::ChatResponse;
 use chat_config::ChatResponseTrait;
-use chat_config::LLMProvider;
+use configs::LLMProvider;
 use chat_config::OpenAiResponse;
 use configs::constants::CHAT_RESPONSE_FORMAT;
 use configs::HttpsClient;
