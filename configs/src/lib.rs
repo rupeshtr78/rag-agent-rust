@@ -1,18 +1,20 @@
 pub mod constants;
+use crate::constants::{CHAT_API_URL, OPEN_AI_URL};
+use anyhow::anyhow;
+use http_body_util::Full;
+use hyper::body::Bytes;
 use hyper_rustls::HttpsConnector;
 use hyper_util::client::legacy::connect::HttpConnector;
 use hyper_util::client::legacy::Client as LegacyClient;
-use http_body_util::Full;
-use hyper::body::Bytes;
-use rustls::crypto::ring::default_provider;
 use hyper_util::rt::TokioExecutor;
 use log::debug;
+use rustls::crypto::ring::default_provider;
 use serde::{Deserialize, Serialize};
-use anyhow::anyhow;
-use crate::constants::{CHAT_API_URL, OPEN_AI_URL};
 
 pub type HttpsClient = LegacyClient<HttpsConnector<HttpConnector>, Full<Bytes>>;
 
+/// creates an HTTPS client with native roots
+/// Returns: HttpsClient
 pub fn get_https_client() -> anyhow::Result<HttpsClient> {
     // Install the crypto provider required by rustls
     match default_provider().install_default() {
@@ -25,7 +27,7 @@ pub fn get_https_client() -> anyhow::Result<HttpsClient> {
         }
     }
 
-    // Create an HTTPS connector with native roots
+    // HTTPS connector with native roots
     let https = hyper_rustls::HttpsConnectorBuilder::new()
         .with_native_roots()?
         .https_or_http()
@@ -37,7 +39,7 @@ pub fn get_https_client() -> anyhow::Result<HttpsClient> {
     anyhow::Ok(client)
 }
 
-/// LLMProvider is an enum that represents the provider of the LLM
+/// LLMProvider supported enum of LLM providers. @TODO Embedding provider only ollama
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub enum LLMProvider {
     OpenAI,
@@ -54,8 +56,6 @@ impl LLMProvider {
         }
     }
 
-    // @TODO merge this with get_chat_api_url
-    #[allow(dead_code)]
     pub fn get_api_url(provider: &str) -> anyhow::Result<String> {
         let provider =
             LLMProvider::get_provider(provider).map_err(|_| anyhow!("Unsupported provider"))?;

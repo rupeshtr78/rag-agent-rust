@@ -8,10 +8,10 @@ use bytes::Bytes;
 use chat_config::ChatMessage;
 use chat_config::ChatResponse;
 use chat_config::ChatResponseTrait;
-use configs::LLMProvider;
 use chat_config::OpenAiResponse;
 use configs::constants::CHAT_RESPONSE_FORMAT;
 use configs::HttpsClient;
+use configs::LLMProvider;
 use http_body_util::Full;
 use log::{debug, info};
 use std::io::Write;
@@ -202,6 +202,7 @@ pub async fn ai_chat(
     chat_request: &Arc<RwLock<ChatRequest>>,
     http_client: &HttpsClient,
 ) -> anyhow::Result<Box<dyn ChatResponseTrait + Send + Sync>> {
+    // use Arc?
     let chat_request = chat_request.read().await;
 
     let chat_url = chat_request.get_chat_api_url()?;

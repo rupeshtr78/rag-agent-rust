@@ -1,15 +1,15 @@
 use crate::model_options::Options;
 use crate::prompt_template::Prompt;
+use anyhow::Context;
 use anyhow::Result;
-use anyhow::{Context};
 use configs::constants::{self, OPEN_AI_CHAT_API, OPEN_AI_URL};
+pub use configs::LLMProvider;
 use log::debug;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt;
-pub use configs::LLMProvider;
 
-/// ChatRole is an enum that represents the role of the chat message
+/// ChatRole different role of the chat message
 #[derive(Serialize, Deserialize, Debug, Clone)]
 
 pub enum ChatRole {
@@ -23,7 +23,7 @@ pub enum ChatRole {
     Tool,
 }
 
-/// ChatMessage is a struct that represents a chat message
+/// ChatMessage contains the role of the sender and the content of the message
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ChatMessage {
     role: ChatRole,
@@ -60,8 +60,7 @@ impl ChatMessage {
     }
 }
 
-/// ChatRequest is a struct that represents a chat request
-// @TODO: Add provider to choose between OpenAI and other providers like ollama
+/// ChatRequest
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ChatRequest {
     pub provider: LLMProvider,
@@ -74,7 +73,7 @@ pub struct ChatRequest {
     pub options: Option<Options>,
 }
 
-/// ChatBody is a struct that represents the body of a chat request
+/// ChatBody body of a chat request
 #[derive(Serialize, Deserialize)]
 struct ChatBody {
     model: String,
@@ -161,7 +160,7 @@ impl ChatRequest {
     }
 }
 
-/// ChatResponse is a struct that represents a chat response
+/// ChatResponse body of chat response
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ChatResponse {
     pub model: Option<String>,
@@ -219,7 +218,7 @@ impl OpenAiResponse {
     }
 }
 
-/// ChatResponseTrait is a trait that defines the methods for chat responses
+/// ChatResponseTrait methods for chat responses
 pub trait ChatResponseTrait {
     fn get_message(&self) -> Option<&ChatMessage>;
 }
