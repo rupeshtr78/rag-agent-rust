@@ -91,7 +91,8 @@ pub async fn create_embed_request(
     //     .await
     //     .context("Failed to read response body")?;
     let body = str::from_utf8(&body_bytes)?;
-    let response: EmbedResponse = serde_json::from_str(body).context("Failed to parse response")?;
+    let response: EmbedResponse =
+        serde_json::from_str(body).context("Failed to parse Embedding response")?;
 
     debug!("Response: {:?}", response.model);
     debug!("Response Length: {:?}", response.embeddings[0].len());

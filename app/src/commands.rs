@@ -232,13 +232,14 @@ pub fn run_app(args: Args, rt: Runtime) -> Result<()> {
         info!("Running in agent mode");
         crate::agent_interactive::interactive_cli(&rt)
             .context("Failed to run agent interactive CLI")?;
-    }
-
-    // Run the command interactive for testing
-    if let Some(true) = args.interactive {
+    } else if let Some(true) = args.interactive {
         let commands =
             cli_interactive::interactive_cli().context("Failed to run interactive CLI")?;
         cli::cli(commands, rt).context("Failed to run interactive Command")?;
+    } else {
+        info!("Running in agent mode");
+        crate::agent_interactive::interactive_cli(&rt)
+            .context("Failed to run agent interactive CLI")?;
     }
 
     Ok(())
