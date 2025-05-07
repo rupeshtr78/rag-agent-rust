@@ -2,18 +2,18 @@
 mod load_lancedb_test {
     use anyhow::Context;
     use anyhow::Result;
-    use arrow::array::{FixedSizeListArray, Int32Array, StringArray};
+    use arrow::array::{FixedSizeListArray, StringArray};
     use configs::constants::VECTOR_DB_DIM_SIZE;
     use embedder::embed_config::{EmbedRequest, EmbedResponse};
     use lancedb::connection::Connection;
-    use lancedb::table;
-    use serde::de;
     use std::sync::Arc;
     use tokio::sync::RwLock;
-    use vectordb::load_lancedb::{
-        create_index_on_embedding, create_inverted_index, create_lance_table, create_record_batch,
-        insert_embeddings, TableSchema,
+    use vectordb::vector_load::{
+        create_record_batch,
+        insert_embeddings,
     };
+    use vectordb::vector_index::{create_index_on_embedding, create_inverted_index};
+    use vectordb::vector_schema::{create_lance_table, TableSchema};
 
     // Mock constants for testing
     const TEST_DB_URI: &str = "test_db";

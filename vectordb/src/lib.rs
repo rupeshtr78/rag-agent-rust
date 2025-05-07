@@ -1,5 +1,7 @@
-pub mod load_lancedb;
+pub mod vector_load;
 pub mod query;
+pub mod vector_index;
+pub mod vector_schema;
 
 use ::anyhow::Context;
 use ::anyhow::Result;
@@ -11,7 +13,7 @@ use hyper::body::Bytes;
 use hyper_rustls::HttpsConnector;
 use hyper_util::client::legacy::connect::HttpConnector;
 use hyper_util::client::legacy::Client as LegacyClient;
-use load_lancedb::TableSchema;
+use vector_schema::TableSchema;
 // use hyper::client::HttpConnector;
 // use hyper::Client;
 use ::log::debug;
@@ -95,7 +97,7 @@ pub async fn run_embedding_pipeline(
     let table_name = format!("{}_{}", &file_name, "table");
     let table_schema = TableSchema::new(&table_name);
 
-    load_lancedb::create_lance_table(&mut db, &table_schema)
+    vector_schema::create_lance_table(&mut db, &table_schema)
         .await
         .context("Failed to create table")?;
 
@@ -121,7 +123,7 @@ pub async fn run_embedding_pipeline(
             debug!("Embedding Response: {:?}", embed_response.embeddings.len());
 
             // Create record batch
-            let record_batch = load_lancedb::create_record_batch(
+            let record_batch = vector_load::create_record_batch(
                 id as i32,
                 embed_request,
                 embed_response,
@@ -131,7 +133,7 @@ pub async fn run_embedding_pipeline(
             .context("Failed to create record batch")?;
 
             // Insert embeddings into the table
-            load_lancedb::insert_embeddings(&table_schema, record_batch, table)
+            vector_load::insert_embeddings(&table_schema, record_batch, table)
                 .await
                 .context("Failed to insert embeddings")?;
 
@@ -152,7 +154,7 @@ pub async fn run_embedding_pipeline(
 
     // Create an index on the embedding column
     let embedding_col = table_schema.vector.name();
-    load_lancedb::create_index_on_embedding(
+    vector_index::create_index_on_embedding(
         &mut db,
         table_schema.name.as_str(),
         vec![embedding_col.as_str()],
@@ -164,7 +166,7 @@ pub async fn run_embedding_pipeline(
     let metadata_col = table_schema.metadata.name();
     // let content_col = table_schema.content.name();
     // create inverted index
-    load_lancedb::create_inverted_index(
+    vector_index::create_inverted_index(
         &mut db,
         table_schema.name.as_str(),
         vec![metadata_col.as_str()],
@@ -175,7 +177,7 @@ pub async fn run_embedding_pipeline(
     // Create a text index on the content column
     let content_col = table_schema.content.name();
     // create inverted index
-    load_lancedb::create_inverted_index(
+    vector_index::create_inverted_index(
         &mut db,
         table_schema.name.as_str(),
         vec![content_col.as_str()],
